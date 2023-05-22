@@ -47,6 +47,30 @@ module.exports = function (app) {
     }
    
   });
+
+  app.post("/api/v1/users", async function (req, res) {
+    try {
+      // Retrieve the necessary data from the request body
+      const { firstName, lastName, email, password } = req.body;
+      
+      // Perform any necessary validation on the data
+      
+      // Insert the new user into the database using the db object
+      const newUser = await db("se_project.users").insert({
+        firstName,
+        lastName,
+        email,
+        password,
+      });
+      
+      // Return a success message or the newly created user object
+      return res.status(201).json(newUser);
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).send("Could not create user");
+    }
+  });
+  
  
 
 

@@ -23,11 +23,9 @@ async function uploadSR() {
     { stationid: 6, routeid: 11 },
     { stationid: 6, routeid: 12 },
   ];
-  for (let i = 0; i < SR.length; i++) {
-    const element =SR[i];
+  SR.forEach(async (element) => {
     await db("se_project.stationroutes").insert(element).returning("*");
-  }
-
+  });
 }
 async function uploadS() {
   let stations = [
@@ -96,11 +94,14 @@ async function uploadR() {
       { routename: "hi67", fromstationid: 6, tostationid: 7 },
     ];
   
-  for (let i = 0; i < routes.length; i++) {
-    const element =routes[i];
-    await db("se_project.routes").insert(element).returning("*");
-  }
+    for (let i = 0; i < routes.length; i++) {
+      const element =routes[i];
+      await db("se_project.routes").insert(element).returning("*");
+    }
 }
-//uploadS(); first to run
-//uploadR(); second
-//uploadSR(); third
+//uploadS();
+//uploadR();
+
+
+
+uploadSR();
