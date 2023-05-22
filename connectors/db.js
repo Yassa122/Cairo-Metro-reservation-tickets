@@ -14,7 +14,7 @@ const config = {
     database: 'se_project',
   },
 };
-
+//qw
 // create the connection with postgres
 const db = knex(config);
 
