@@ -115,7 +115,43 @@ module.exports = function (app) {
     // Rest of your routes
   };
   
-
+  const deleteRoute = async function (req, res) {
+    try {
+      const user = await getUser(req);
+  
+      // Check if the user is an admin
+      if (!user.isAdmin) {
+        return res.status(403).send("Only admin can delete routes.");
+      }
+  
+      const routeId = req.params.routeId;
+  
+      // Retrieve the route details from the database
+      const route = await db("se_project.routes").where("id", routeId).first();
+  
+      // Check if the route exists
+      if (!route) {
+        return res.status(404).send("Route not found.");
+      }
+  
+      // Delete the route from the database
+      await db("se_project.routes").where("id", routeId).del();
+  
+      // Perform any additional logic related to station status and position changes
+  
+      return res.status(200).json({ message: "Route deleted successfully." });
+    } catch (e) {
+      console.log(e.message);
+      return res.status(500).send("Internal Server Error");
+    }
+  };
+  
+  module.exports = function (app) {
+    app.delete("/api/v1/route/:routeId", deleteRoute);
+  
+    // Rest of your routes
+  };
+  
 
 
 
