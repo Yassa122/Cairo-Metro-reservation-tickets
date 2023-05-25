@@ -1,9 +1,9 @@
-DROP TABLE IF EXISTS se_project.users;
- DROP TABLE IF EXISTS roles;
- DROP TABLE IF EXISTS faculties;
-DROP TABLE IF EXISTS courses;
-DROP TABLE IF EXISTS sessions;
-DROP TABLE IF EXISTS enrollments;
+-- DROP TABLE IF EXISTS se_project.users;
+-- DROP TABLE IF EXISTS roles;
+-- DROP TABLE IF EXISTS faculties;
+-- DROP TABLE IF EXISTS courses;
+-- DROP TABLE IF EXISTS sessions;
+-- DROP TABLE IF EXISTS enrollments;
 --- Note in pgadmin columns name will be lowerCase 
 --so either change them from pgadmin or change in the code to lower
 CREATE TABLE IF NOT EXISTS se_project.users
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS se_project.rides
     ticketid integer not null,
     tripdate timestamp not null,
     FOREIGN KEY( userid ) REFERENCES se_project.users,
-    FOREIGN KEY( ticketid ) REFERENCES se_project.rides,
+    FOREIGN KEY( ticketid ) REFERENCES se_project.tickets,
     CONSTRAINT rides_pkey PRIMARY KEY (id)
 );
 CREATE TABLE IF NOT EXISTS se_project.transactions
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS se_project.transactions
     id SERIAL NOT NULL,
     amount INTEGER NOT NULL,
     userid INTEGER NOT NULL,
-    purchasedIid text NOT NULL, 
+    purchasedid text NOT NULL, 
     FOREIGN KEY( userid ) REFERENCES se_project.users,
     CONSTRAINT transactions_pkey PRIMARY KEY (id)
 );

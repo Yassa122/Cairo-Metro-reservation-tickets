@@ -3,29 +3,35 @@ async function uploadSR() {
 
   let SR = [
     { stationid: 1, routeid: 1 },
-    { stationid: 1, routeid: 2 },
-    { stationid: 2, routeid: 2 },
-    { stationid: 2, routeid: 3 },
-    { stationid: 3, routeid: 3 },
-    { stationid: 3, routeid: 4 },
-    { stationid: 3, routeid: 5 },
-    { stationid: 3, routeid: 6 },
-    { stationid: 3, routeid: 7 },
-    { stationid: 3, routeid: 8},
-    { stationid: 4, routeid: 5 },
-    { stationid: 4, routeid: 6 },
-    { stationid: 4, routeid: 9},
-    { stationid: 4, routeid: 10 },
-    { stationid: 5, routeid: 9 },
-    { stationid: 5, routeid: 10 },
-    { stationid: 6, routeid: 7 },
-    { stationid: 6, routeid: 8 },
-    { stationid: 6, routeid: 11 },
-    { stationid: 6, routeid: 12 },
+    { stationid: 1, routeid: 2 },
+    { stationid: 2, routeid: 1 },
+    { stationid: 2, routeid: 2 },
+    { stationid: 2, routeid: 3 },
+    { stationid: 2, routeid: 4 },
+    { stationid: 3, routeid: 3 },
+    { stationid: 3, routeid: 4 },
+    { stationid: 3, routeid: 5 },
+    { stationid: 3, routeid: 6 },
+    { stationid: 3, routeid: 7 },
+    { stationid: 3, routeid: 8},
+    { stationid: 4, routeid: 5 },
+    { stationid: 4, routeid: 6 },
+    { stationid: 4, routeid: 9},
+    { stationid: 4, routeid: 10 },
+    { stationid: 5, routeid: 9 },
+    { stationid: 5, routeid: 10 },
+    { stationid: 6, routeid: 7 },
+    { stationid: 6, routeid: 8 },
+    { stationid: 6, routeid: 11 },
+    { stationid: 6, routeid: 12 },
+    { stationid: 7, routeid: 11 },
+    { stationid: 7, routeid: 12 }
   ];
-  SR.forEach(async (element) => {
+  for (let i = 0; i < SR.length; i++) {
+    const element =SR[i];
     await db("se_project.stationroutes").insert(element).returning("*");
-  });
+  }
+
 }
 async function uploadS() {
   let stations = [
@@ -94,11 +100,11 @@ async function uploadR() {
       { routename: "hi67", fromstationid: 6, tostationid: 7 },
     ];
   
-    for (let i = 0; i < routes.length; i++) {
-      const element =routes[i];
-      await db("se_project.routes").insert(element).returning("*");
-    }
+  for (let i = 0; i < routes.length; i++) {
+    const element =routes[i];
+    await db("se_project.routes").insert(element).returning("*");
+  }
 }
-uploadS();
-//uploadR();
-//uploadSR();
+//uploadS(); //first to run
+//uploadR();// second
+//uploadSR(); //third
