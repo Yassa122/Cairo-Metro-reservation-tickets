@@ -3,35 +3,26 @@ const { v4 } = require("uuid");
 const db = require("../../connectors/db");
 const roles = require("../../constants/roles");
 const {getSessionToken}=require('../../utils/session')
-const getUser = async function (req) {
-  const sessionToken = getSessionToken(req);
-  if (!sessionToken) {
-    return res.status(301).redirect("/");
+const getUser = async function(req) {
+    const sessionToken = getSessionToken(req);
+    if (!sessionToken) {
+      return res.status(301).redirect('/');
+    }
+  
+    const user = await db.select('*')
+      .from('se_project.sessions')
+      .where('token', sessionToken)
+      .innerJoin('se_project.users', 'se_project.sessions.userid', 'se_project.users.id')
+      .innerJoin('se_project.roles', 'se_project.users.roleid', 'se_project.roles.id')
+      .first();
+   
+    console.log('user =>', user)
+    user.isStudent = user.roleid === roles.student;
+    user.isAdmin = user.roleid === roles.admin;
+    user.isSenior = user.roleid === roles.senior;
+  
+    return user;  
   }
-  console.log("hi",sessionToken);
-  const user = await db
-    .select("*")
-    .from("se_project.sessions")
-    .where("token", sessionToken)
-    .innerJoin(
-      "se_project.users",
-      "se_project.sessions.userid",
-      "se_project.users.id"
-    )
-    .innerJoin(
-      "se_project.roles",
-      "se_project.users.roleid",
-      "se_project.roles.id"
-    )
-   .first();
-
-  console.log("user =>", user);
-  user.isNormal = user.roleid === roles.user;
-  user.isAdmin = user.roleid === roles.admin;
-  user.isSenior = user.roleid === roles.senior;
-  console.log("user =>", user)
-  return user;
-};
 
 module.exports = function (app) {
   // example
@@ -65,34 +56,10 @@ module.exports = function (app) {
       return res.status(400).send("Could not get user");
     }
   });
-  //Reset password
-  app.put("/api/v1/password/reset", async function (req, res) {
-    try {
-      const { email, password } = req.body;
-      const user = await db
-        .select("*")
-        .from("se_project.users")
-        .where("email", email)
-        .first();
-      if (!user) {
-        return res.status(400).send("User not found");
-      }
-      const updatedUser = await db
+  
 
-        .update({
-          password,
-        })
-        .into("se_project.users")
-        .where("id", user.id)
-        .returning("*")
-        .then((rows) => rows[0]);
-      return res.status(200).json(updatedUser);
-    } catch (e) {
-      console.log(e.message);
-      return res.status(400).send("Could not reset password");
-    }
-  });
   //subscriptions:Get Zones Data
+  //working
   app.get("/api/v1/zones", async function (req, res) {
     try {
       const zones = await db.select("*").from("se_project.zones");
@@ -103,29 +70,67 @@ module.exports = function (app) {
     }
   });
   //subscriptions:Pay for subscription online
+  //not working
   app.post("/api/v1/payment/subscription", async function (req, res) {
     try {
       const user = await getUser(req);
-      const { paymentMethodId, priceId } = req.body;
+      const {
+        purchasedId,
+        creditCardNumber,
+        holderName,
+        payedAmount,
+        subType,
+        zoneId
+      } = req.body;
       const customer = await db
         .select("*")
-        .from("se_project.customers")
-        .where("userid", user.id)
+        .from("se_project.users")
+        .where("id", user.id)
         .first();
       if (!customer) {
         return res.status(400).send("Customer not found");
       }
-      const subscription = await stripe.subscriptions.create({
+      const paymentMethod = await db
+        .select("*")
+        .from("se_project.stripe_payment_method")
+        .where("userid", user.id)
+        .first();
+      if (!paymentMethod) {
+        return res.status(400).send("Payment method not found");
+      }
+      const paymentIntent = await stripe.paymentIntents.create({
         customer: customer.stripeid,
-        items: [{ price: priceId }],
-        default_payment_method: paymentMethodId,
+        payment_method: paymentMethod.id,
+        amount: payedAmount,
+        currency: "EGP",
+        confirmation_method: "manual",
+        confirm: true,
       });
+      const subscription = await db
+        .insert({
+          id: v4(),
+          userid: user.id,
+          zoneid: zoneId,
+          type: subType,
+          status: "active",
+          createdat: new Date(),
+          updatedat: new Date(),
+        })
+        .into("se_project.subscriptions")
+        .returning("*")
+        .then((rows) => rows[0]);
       return res.status(200).json(subscription);
     } catch (e) {
       console.log(e.message);
-      return res.status(400).send("Could not create subscription");
+      return res.status(400).send("Could not create payment intent");
     }
   });
+
+  
+
+      
+
+
   //tickets:Pay for ticket online
   app.post("/api/v1/payment/ticket", async function (req, res) {
     try {
@@ -188,8 +193,9 @@ module.exports = function (app) {
       return res.status(400).send("Could not purchase subscription");
     }
   });
-  //prices:Check Price
-  api.post("/api/v1/tickets/price/:originId/:destinationId", async function (req, res) {
+  //prices:Check Price 
+  //working
+  app.get("/api/v1/tickets/price/:originId & :destinationId", async function (req, res) {
     try {
       const { originId, destinationId } = req.params;
       const origin = await db
@@ -251,6 +257,7 @@ module.exports = function (app) {
     }
   }
   );
+
 }
 
   
