@@ -35,6 +35,34 @@ const getUser = async function (req) {
 
 module.exports = function (app) {
   // example
+  app.post("/api/v1/station", async function (req, res) {
+    try {
+      const user = await getUser(req);
+      if (!user.isAdmin) {
+        return res.status(403).send("Only admins can create stations");
+      }
+
+      const { stationName } = req.body;
+      if (!stationName) {
+        return res.status(400).send("Station name is required");
+      }
+
+      // Create the station in the database
+      const station = {
+        id: v4(), // Generate a unique ID for the station
+        name: stationName,
+      };
+
+      // Save the station in the database
+      await db("se_project.stations").insert(station);
+
+      return res.status(201).json(station);
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).send("Could not create station");
+    }
+  });
+
   app.get("/users", async function (req, res) {
     try {
        const user = await getUser(req);
@@ -47,8 +75,5 @@ module.exports = function (app) {
     }
    
   });
- 
-
-
   
 };
