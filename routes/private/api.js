@@ -72,61 +72,100 @@ module.exports = function (app) {
     }
   });
 
-  app.post("/api/v1/payment/subscription", async function (req, res) {
+  app.get("/api/v1/tickets/price", async function (req, res) {
     try {
-      const user = await getUser(req);
-      if (!user) {
-        return res.status(401).send("Unauthorized");
+      const { originId, destinationId } = req.params;
+      const origin = await db
+        .select("*")
+        .from("se_project.zones")
+        .where("id", originId)
+        .first();
+      if (!origin) {
+        return res.status(400).send("Origin not found");
       }
-
-      const { purchasedId, creditCardNumber, holderName, payedAmount, subType, zoneId } = req.body;
-
-      if (isEmpty(purchasedId) || isEmpty(creditCardNumber) || isEmpty(holderName) || isEmpty(payedAmount) || isEmpty(subType) || isEmpty(zoneId)) {
-        return res.status(400).send("Missing required fields");
+      const destination = await db
+        .select("*")
+        .from("se_project.zones")
+        .where("id", destinationId)
+        .first();
+      if (!destination) {
+        return res.status(400).send("Destination not found");
       }
+      const price = await db
 
-      const paymentId = v4();
-
-      let noOfTickets;
-      switch (subType) {
-        case 'annual':
-          noOfTickets = 100;
-          break;
-        case 'quarterly':
-          noOfTickets = 50;
-          break;
-        case 'monthly':
-          noOfTickets = 10;
-          break;
-        default:
-          return res.status(400).send("Invalid subscription type");
+        .select("*")
+        .from("se_project.prices")
+        .where("originid", originId)
+        .andWhere("destinationid", destinationId)
+        .first();
+      if (!price) {
+        return res.status(400).send("Price not found");
       }
-
-      // Insert into subscription table
-      const subscriptionId = await db("se_project.subsription")
-        .insert({
-          subtype: subType,
-          zoneid: zoneId,
-          userid: user.id,
-          nooftickets: noOfTickets
-        })
-        .returning('id');
-
-      // Insert into transactions table
-      await db("se_project.transactions")
-        .insert({
-          id: paymentId,
-          amount: payedAmount,
-          userid: user.id,
-          purchasedid: subscriptionId[0] // Use the subscription id as the purchased id
-        });
-
-      return res.status(201).json({ message: "Payment successful", paymentId });
+      return res.status(200).json(price);
     } catch (e) {
       console.log(e.message);
-      return res.status(500).send("Error processing payment");
+      return res.status(400).send("Could not get price");
+    }
+  });
+//WORKING
+app.post("/api/v1/payment/subscription", async function (req, res) {
+  try {
+    const user = await getUser(req);
+    if (!user) {
+      return res.status(401).send("Unauthorized");
     }
-  });
+
+    const { creditCardNumber, holderName, payedAmount, subType, zoneId } = req.body;
+
+    // Validate input
+    if (!creditCardNumber || !holderName || !payedAmount || !subType || !zoneId) {
+      return res.status(400).send("Missing required fields");
+    }
+
+    const paymentId = v4();
+
+    let noOfTickets;
+    switch (subType) {
+      case 'annual':
+        noOfTickets = 100;
+        break;
+      case 'quarterly':
+        noOfTickets = 50;
+        break;
+      case 'monthly':
+        noOfTickets = 10;
+        break;
+      default:
+        return res.status(400).send("Invalid subscription type");
+    }
+
+    // Insert into subscription table
+    const subscriptionId = await db("se_project.subscription")
+      .insert({
+        subtype: subType,
+        zoneid: zoneId,
+        userid: user.userid,
+        nooftickets: noOfTickets
+      })
+      .returning('id');
+
+    // Insert into transactions table
+    await db("se_project.transactions")
+      .insert({
+        // id: paymentId,
+        amount: payedAmount,
+        userid: user.userid,
+        purchasediid: subscriptionId[0] // Use the subscription id as the purchased id
+      });
+
+    return res.status(201).json({ message: "Payment successful", paymentId });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).send("Error processing payment");
+  }
+});
+
+
 
   app.post("/api/v1/payment/ticket", async function (req, res) {
     try {
@@ -144,7 +183,7 @@ module.exports = function (app) {
       // Check if the user has a valid subscription
       const subscription = await db
         .select("*")
-        .from("se_project.subsription")
+        .from("se_project.subscription")
         .where("userid", user.id)
         .andWhere("nooftickets", ">", 0)
         .first();
@@ -154,7 +193,7 @@ module.exports = function (app) {
       }
   
       // Deduct one ticket from the subscription
-      await db("se_project.subsription")
+      await db("se_project.subscription")
         .where("id", subscription.id)
         .update({
           nooftickets: subscription.nooftickets - 1
@@ -205,7 +244,7 @@ module.exports = function (app) {
       // Check if the user has a valid subscription
       const subscription = await db
         .select("*")
-        .from("se_project.subsription")
+        .from("se_project.subscription")
         .where("id", subId)
         .andWhere("userid", user.id)
         .andWhere("nooftickets", ">", 0)
@@ -216,7 +255,7 @@ module.exports = function (app) {
       }
   
       // Deduct one ticket from the subscription
-      await db("se_project.subsription")
+      await db("se_project.subscription")
         .where("id", subscription.id)
         .update({
           nooftickets: subscription.nooftickets - 1

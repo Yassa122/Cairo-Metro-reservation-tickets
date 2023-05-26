@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS se_project.zones
     CONSTRAINT zones_pkey PRIMARY KEY (id)
 
 );
-CREATE TABLE IF NOT EXISTS se_project.subsription
+CREATE TABLE IF NOT EXISTS se_project.subscription
 (
     id SERIAL NOT NULL,
     subtype text NOT NULL, --annual --month -- quarterly
