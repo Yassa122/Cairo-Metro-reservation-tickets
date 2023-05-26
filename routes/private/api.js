@@ -46,18 +46,7 @@ module.exports = function (app) {
       return res.status(400).send("Could not create user");
     }
   });
-  //dashboard: Get user data
-  app.get("/api/v1/user", async function (req, res) {
-    try {
-      const user = await getUser(req);
-      return res.status(200).json(user);
-    } catch (e) {
-      console.log(e.message);
-      return res.status(400).send("Could not get user");
-    }
-  });
   
-
   //subscriptions:Get Zones Data
   //working
   app.get("/api/v1/zones", async function (req, res) {
@@ -71,61 +60,35 @@ module.exports = function (app) {
   });
   //subscriptions:Pay for subscription online
   //not working
-  app.post("/api/v1/payment/subscription", async function (req, res) {
+  app.post("/api/v1/subscription", async function (req, res) {
     try {
-      const user = await getUser(req);
       const {
-        purchasedId,
-        creditCardNumber,
-        holderName,
-        payedAmount,
-        subType,
-        zoneId
+        subtype,
+        zoneid,
+        userid,
+        nooftickets
       } = req.body;
-      const customer = await db
-        .select("*")
-        .from("se_project.users")
-        .where("id", user.id)
-        .first();
-      if (!customer) {
-        return res.status(400).send("Customer not found");
+  
+      if (!subtype || !zoneid || !userid || !nooftickets) {
+        return res.status(400).send("All fields are required.");
       }
-      const paymentMethod = await db
-        .select("*")
-        .from("se_project.stripe_payment_method")
-        .where("userid", user.id)
-        .first();
-      if (!paymentMethod) {
-        return res.status(400).send("Payment method not found");
-      }
-      const paymentIntent = await stripe.paymentIntents.create({
-        customer: customer.stripeid,
-        payment_method: paymentMethod.id,
-        amount: payedAmount,
-        currency: "EGP",
-        confirmation_method: "manual",
-        confirm: true,
-      });
-      const subscription = await db
+  
+      const subscription = await db("se_project.subscription")
         .insert({
-          id: v4(),
-          userid: user.id,
-          zoneid: zoneId,
-          type: subType,
-          status: "active",
-          createdat: new Date(),
-          updatedat: new Date(),
+          subtype,
+          zoneid,
+          userid,
+          nooftickets
         })
-        .into("se_project.subscriptions")
         .returning("*")
         .then((rows) => rows[0]);
-      return res.status(200).json(subscription);
-    } catch (e) {
-      console.log(e.message);
-      return res.status(400).send("Could not create payment intent");
+  
+      return res.status(201).json(subscription);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
     }
   });
-
   
 
       
@@ -257,7 +220,27 @@ module.exports = function (app) {
     }
   }
   );
-
-}
-
+  //senior request:request for senior role
+  //working
+  app.post("/api/v1/senior/request", async function (req, res) {
+    try {
+      const user = await getUser(req);
+      const nationalId = req.body.nationalId;
+      const seniorRequest = await db
+        .insert({
+          status: "pending",
+          userid: user.id,
+          nationalid: nationalId 
+        })
+        .into("se_project.senior_requests")
+        .returning("*")
+        .then((rows) => rows[0]);
+  
+      res.status(201).send(seniorRequest);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("An error occurred while creating the senior request.");
+    }
+  });
+};
   
