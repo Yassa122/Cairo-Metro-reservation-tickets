@@ -166,6 +166,9 @@ app.post("/api/v1/payment/subscription", async function (req, res) {
 });
 
 //WORKING
+
+
+
 app.post("/api/v1/payment/ticket", async function (req, res) {
   try {
     const user = await getUser(req);
@@ -182,23 +185,12 @@ app.post("/api/v1/payment/ticket", async function (req, res) {
 
     const paymentId = v4();
 
-    // Get user subscription if any
-    const subscription = await db('se_project.subscription')
-      .where('userid', user.id)
-      .first();
-
-    let subId = null;
-    if (subscription) {
-      subId = subscription.id;
-    }
-
     // Insert into tickets table
     const ticketId = await db("se_project.tickets")
       .insert({
         origin: origin,
         destination: destination,
         userid: user.userid,
-        subid: subId, // use the subscription id or null if no subscription
         tripdate: tripDate
       })
       .returning('id');
@@ -220,68 +212,73 @@ app.post("/api/v1/payment/ticket", async function (req, res) {
 
 
 
-
-  app.post("/api/v1/tickets/purchase/subscription", async function (req, res) {
-    try {
-      const user = await getUser(req);
-      if (!user) {
-        return res.status(401).send("Unauthorized");
-      }
-  
-      const { subId, origin, destination, tripDate } = req.body;
-  
-      if (isEmpty(subId) || isEmpty(origin) || isEmpty(destination) || isEmpty(tripDate)) {
-        return res.status(400).send("Missing required fields");
-      }
-  
-      // Check if the user has a valid subscription
-      const subscription = await db
-        .select("*")
-        .from("se_project.subscription")
-        .where("id", subId)
-        .andWhere("userid", user.id)
-        .andWhere("nooftickets", ">", 0)
-        .first();
-  
-      if (!subscription) {
-        return res.status(400).send("No valid subscription found");
-      }
-  
-      // Deduct one ticket from the subscription
-      await db("se_project.subscription")
-        .where("id", subscription.id)
-        .update({
-          nooftickets: subscription.nooftickets - 1
-        });
-  
-      // Insert into tickets table
-      const ticketId = await db("se_project.tickets")
-        .insert({
-          origin: origin,
-          destination: destination,
-          userid: user.id,
-          subid: subscription.id,
-          tripdate: tripDate
-        })
-        .returning('id');
-  
-      // Insert into rides table
-      await db("se_project.rides")
-        .insert({
-          status: "upcoming",
-          origin: origin,
-          destination: destination,
-          userid: user.id,
-          ticketid: ticketId[0],
-          tripdate: tripDate
-        });
-  
-      return res.status(201).json({ message: "Ticket purchased successfully through subscription" });
-    } catch (e) {
-      console.log(e.message);
-      return res.status(500).send("Error processing payment");
+app.post("/api/v1/tickets/purchase/subscription", async function (req, res) {
+  try {
+    const user = await getUser(req);
+    if (!user) {
+      return res.status(401).send("Unauthorized");
     }
-  });
+
+    const { subId, origin, destination, tripDate } = req.body;
+
+    // Validate input
+    if (!subId || !origin || !destination || !tripDate) {
+      return res.status(400).send("Missing required fields");
+    }
+
+    // Fetch user's subscription
+    const subscription = await db('se_project.subscription')
+      .where({
+        id: subId,
+        userid: user.id,
+      })
+      .first();
+
+    // Check if subscription exists and has tickets left
+    if (!subscription || subscription.nooftickets <= 0) {
+      return res.status(400).send("Invalid subscription or no tickets left in the subscription.");
+    }
+
+    // Deduct ticket from subscription
+    await db('se_project.subscription')
+      .where({
+        id: subId,
+        userid: user.id,
+      })
+      .update({
+        nooftickets: db.raw('nooftickets - 1')
+      });
+
+    // Insert into tickets table
+    const ticketId = await db("se_project.tickets")
+      .insert({
+        origin: origin,
+        destination: destination,
+        userid: user.userid,
+        subid: subId, // use the subscription id
+        tripdate: tripDate
+      })
+      .returning('id');
+
+    // Insert into rides table
+    const rideId = await db("se_project.rides")
+      .insert({
+        status: "upcoming",
+        origin: origin,
+        destination: destination,
+        userid: user.userid,
+        ticketid: ticketId[0],
+        tripdate: tripDate
+      })
+      .returning('id');
+
+    return res.status(201).json({ message: "Ticket purchased successfully", ticketId: ticketId[0], rideId: rideId[0] });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).send("Error processing ticket purchase");
+  }
+});
+
   
   
 };
