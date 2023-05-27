@@ -35,6 +35,58 @@ const getUser = async function (req) {
 
 module.exports = function (app) {
   // example
+  // PUT /api/v1/requests/senior/:requestId
+app.put('/api/v1/requests/senior/', (req, res) => {
+  const { requestId } = req.params;
+  const { seniorStatus } = req.body;
+
+  // Handle acceptance
+  if (seniorStatus === 'accepted') {
+    // Perform actions for accepting the request
+    // Update the request status in the database accordingly
+
+    return res.status(200).json({ message: 'Request accepted successfully' });
+  }
+
+  // Handle rejection
+  if (seniorStatus === 'rejected') {
+    // Perform actions for rejecting the request
+    // Update the request status in the database accordingly
+
+    return res.status(200).json({ message: 'Request rejected successfully' });
+  }
+
+  // Invalid seniorStatus value
+  return res.status(400).json({ message: 'Invalid seniorStatus value' });
+});
+
+// PUT /api/v1/requests/refunds/:requestId
+app.put('/api/v1/requests/refunds/', (req, res) => {
+  const { requestId } = req.params;
+  const { refundStatus } = req.body;
+
+  // Handle acceptance
+  if (refundStatus === 'accepted') {
+    // Perform actions for accepting the refund request
+    // Update the refund request status in the database accordingly
+
+    return res.status(200).json({ message: 'Refund request accepted successfully' });
+  }
+
+  // Handle rejection
+  if (refundStatus === 'rejected') {
+    // Perform actions for rejecting the refund request
+    // Update the refund request status in the database accordingly
+
+    return res.status(200).json({ message: 'Refund request rejected successfully' });
+  }
+
+  // Invalid refundStatus value
+  return res.status(400).json({ message: 'Invalid refundStatus value' });
+});
+
+
+
   app.get("/users", async function (req, res) {
     try {
        const user = await getUser(req);
