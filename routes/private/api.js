@@ -35,6 +35,98 @@ const getUser = async function (req) {
 
 module.exports = function (app) {
   // example
+
+  const createStation = async function (req, res) {
+    try {
+      const user = await getUser(req);
+  
+      // Check if the user is an admin
+      if (!user.isAdmin) {
+        return res.status(403).json({ error: "Only admin can create stations." });
+      }
+  
+      const { stationname, stationposition, stationstatus, stationtype } = req.body;
+  
+      // Check if the required fields are provided
+      if (!stationname ) {
+        return res
+          .status(400)
+          .json({ error: "Invalid request. Missing required fields." });
+      }
+  
+      // Perform any additional validations if needed
+  
+      // Create the station in the database
+      const station = await db("se_project.stations").insert({
+        stationname: stationname,
+        stationposition: "start",
+        stationstatus: "new",
+        stationtype: "normal"
+      });
+  
+      return res.status(200).json({ message: "Station created successfully." });
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).json({ error: "Internal Server Error" });
+    }
+  };
+  
+  app.post("/api/v1/station", createStation);
+  
+  
+
+  const updateStation = async function (req, res) {
+    try {
+      const user = await getUser(req);
+  
+      // Check if the user is an admin
+      if (!user.isAdmin) {
+        return res.status(403).json({ error: "Only admin can update stations." });
+      }
+  
+      const stationId = req.params.stationId;
+      const parsedStationId = parseInt(stationId);
+  
+      const { stationName } = req.body;
+  
+      // Check if the required fields are provided
+      if (!stationName) {
+        return res
+          .status(400)
+          .json({ error: "Invalid request. Missing required fields." });
+      }
+  
+      // Update the station name in the database
+      const updatedStation = await db("se_project.stations")
+        .where({ id: parsedStationId })
+        .update({ stationname: stationName })
+        .returning("*");
+  
+      // Check if the station was successfully updated
+      if (updatedStation.length === 0) {
+        return res.status(404).json({ error: "Station not found." });
+      }
+  
+      return res.status(200).json(updatedStation);
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).json({ error: "Internal Server Error" });
+    }
+  };
+  
+  app.put("/api/v1/station/:stationId", updateStation);
+  
+
+
+
+
+
+
+
+
+
+
+
   const createRoute = async function (req, res) {
     try {
       const user = await getUser(req);
@@ -134,6 +226,18 @@ module.exports = function (app) {
         return res.status(400).send("Invalid request. Route ID is missing or invalid.");
       }
   
+      // Fetch the route to be deleted
+      const route = await db("se_project.routes")
+        .where({ id: parsedRouteId })
+        .first();
+  
+      // Check if the route exists
+      if (!route) {
+        return res.status(404).send("Route not found.");
+      }
+  
+      const { fromstationid, tostationid } = route;
+  
       // Delete the route from the database
       const deletedRoute = await db("se_project.routes")
         .where({ id: parsedRouteId })
@@ -142,6 +246,29 @@ module.exports = function (app) {
       // Check if the route was successfully deleted
       if (deletedRoute === 0) {
         return res.status(404).send("Route not found.");
+      }
+  
+      // Update the unconnected stations' status and position
+      const fromStationRoutes = await db("se_project.routes")
+        .where({ fromstationid })
+        .select("id");
+  
+      const toStationRoutes = await db("se_project.routes")
+        .where({ tostationid })
+        .select("id");
+  
+      if (isEmpty(fromStationRoutes)) {
+        // No routes from the fromstationid, update its status and position
+        await db("se_project.stations")
+          .where({ id: fromstationid })
+          .update({ stationstatus: "unconnected", stationposition: "end" });
+      }
+  
+      if (isEmpty(toStationRoutes)) {
+        // No routes to the tostationid, update its status and position
+        await db("se_project.stations")
+          .where({ id: tostationid })
+          .update({ stationstatus: "unconnected", stationposition: "start" });
       }
   
       return res.status(200).json({ message: "Route deleted successfully." });
