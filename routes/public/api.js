@@ -30,7 +30,7 @@ app.post("/api/v1/user", async function (req, res) {
       return res.status(400).send("Could not register user");
     }
   });
-
+//
   // Register HTTP endpoint to create new user
   app.post("/api/v1/user/login", async function (req, res) {
     // get users credentials from the JSON body

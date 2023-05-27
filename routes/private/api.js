@@ -61,29 +61,29 @@ app.put('/api/v1/requests/senior/', (req, res) => {
 });
 
 // PUT /api/v1/requests/refunds/:requestId
-app.put('/api/v1/requests/refunds/', (req, res) => {
+app.put('/api/v1/requests/refunds/:requestId', (req, res) => {
   const { requestId } = req.params;
   const { refundStatus } = req.body;
 
-  // Handle acceptance
   if (refundStatus === 'accepted') {
     // Perform actions for accepting the refund request
     // Update the refund request status in the database accordingly
 
-    return res.status(200).json({ message: 'Refund request accepted successfully' });
+    return res.status(200).json({ message: 'Refund request accepted successfully', redirect: '/' });
   }
 
-  // Handle rejection
   if (refundStatus === 'rejected') {
     // Perform actions for rejecting the refund request
     // Update the refund request status in the database accordingly
 
-    return res.status(200).json({ message: 'Refund request rejected successfully' });
+    return res.status(200).json({ message: 'Refund request rejected successfully', redirect: '/' });
   }
 
-  // Invalid refundStatus value
   return res.status(400).json({ message: 'Invalid refundStatus value' });
 });
+
+
+
 
 
 
