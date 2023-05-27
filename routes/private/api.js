@@ -62,7 +62,7 @@ module.exports = function (app) {
         routename: routename,
       });
 
-      return res.status(201).json({ message: "Route created successfully." });
+      return res.status(200).json({ message: "Route created successfully." });
     } catch (e) {
       console.log(e.message);
       return res.status(400).json({ error: "Internal Server Error" });
