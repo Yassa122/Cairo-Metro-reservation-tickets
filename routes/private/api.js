@@ -2,7 +2,7 @@ const { isEmpty } = require("lodash");
 const { v4 } = require("uuid");
 const db = require("../../connectors/db");
 const roles = require("../../constants/roles");
-const {getSessionToken}=require('../../utils/session')
+const { getSessionToken } = require("../../utils/session");
 const getUser = async function (req) {
   const sessionToken = getSessionToken(req);
   if (!sessionToken) {
@@ -37,8 +37,8 @@ module.exports = function (app) {
   // example
   app.get("/users", async function (req, res) {
     try {
-       const user = await getUser(req);
-      const users = await db.select('*').from("se_project.users")
+        const user = await getUser(req);
+      const users = await db.select("*").from("se_project.users");
         
       return res.status(200).json(users);
     } catch (e) {
@@ -71,13 +71,13 @@ module.exports = function (app) {
       return res.status(500).send("Error retrieving zones data");
     }
   });
-
-  app.get("/api/v1/tickets/price", async function (req, res) {
+// in progress
+  app.get("/api/v1/tickets/price/:originId/:destinationId", async function (req, res) {
     try {
       const { originId, destinationId } = req.params;
       const origin = await db
         .select("*")
-        .from("se_project.zones")
+        .from("stations")
         .where("id", originId)
         .first();
       if (!origin) {
@@ -85,28 +85,33 @@ module.exports = function (app) {
       }
       const destination = await db
         .select("*")
-        .from("se_project.zones")
+        .from("stations")
         .where("id", destinationId)
         .first();
       if (!destination) {
         return res.status(400).send("Destination not found");
       }
-      const price = await db
-
-        .select("*")
-        .from("se_project.prices")
-        .where("originid", originId)
-        .andWhere("destinationid", destinationId)
+  
+      // Find the route that includes the origin and destination
+      const route = await db
+        .select("routes.id", "routes.price")
+        .from("routes")
+        .join("stationRoutes", "routes.id", "=", "stationRoutes.routeId")
+        .whereIn("stationRoutes.stationId", [originId, destinationId])
+        .groupBy("routes.id", "routes.price")
+        .having(db.raw("count(distinct stationRoutes.stationId)"), "=", 2)
         .first();
-      if (!price) {
-        return res.status(400).send("Price not found");
+  
+      if (!route) {
+        return res.status(400).send("Route not found");
       }
-      return res.status(200).json(price);
+      return res.status(200).json(route.price);
     } catch (e) {
       console.log(e.message);
       return res.status(400).send("Could not get price");
-    }
-  });
+    }
+  });
+  
 //WORKING
 app.post("/api/v1/payment/subscription", async function (req, res) {
   try {
@@ -164,11 +169,7 @@ app.post("/api/v1/payment/subscription", async function (req, res) {
     return res.status(500).send("Error processing payment");
   }
 });
-
-//WORKING
-
-
-
+//WORKNG
 app.post("/api/v1/payment/ticket", async function (req, res) {
   try {
     const user = await getUser(req);
@@ -211,7 +212,7 @@ app.post("/api/v1/payment/ticket", async function (req, res) {
 });
 
 
-
+//working
 app.post("/api/v1/tickets/purchase/subscription", async function (req, res) {
   try {
     const user = await getUser(req);
@@ -230,7 +231,7 @@ app.post("/api/v1/tickets/purchase/subscription", async function (req, res) {
     const subscription = await db('se_project.subscription')
       .where({
         id: subId,
-        userid: user.id,
+        userid: user.userid,
       })
       .first();
 
@@ -243,7 +244,7 @@ app.post("/api/v1/tickets/purchase/subscription", async function (req, res) {
     await db('se_project.subscription')
       .where({
         id: subId,
-        userid: user.id,
+        userid: user.userid,
       })
       .update({
         nooftickets: db.raw('nooftickets - 1')
@@ -279,6 +280,5 @@ app.post("/api/v1/tickets/purchase/subscription", async function (req, res) {
   }
 });
 
-  
-  
+
 };
