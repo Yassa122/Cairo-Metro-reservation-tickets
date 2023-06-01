@@ -87,7 +87,37 @@ module.exports = function (app) {
           });
       }
       else{
-        // do the online logic
+         // Retrieve the ride associated with the ticket
+  const ride = await db
+  .select("*")
+  .from("se_project.rides")
+  .where("id", ticket.rideid)
+  .first();
+
+if (!ride) {
+  return res.status(404).send("Ride not found");
+}
+
+// Delete the ride from the rides table
+await db("se_project.rides")
+  .where("id", ride.id)
+  .del();
+
+// Retrieve the transaction associated with the ride
+const transaction = await db
+  .select("*")
+  .from("se_project.transaction")
+  .where("userid", userid)
+  .first();
+
+if (!transaction) {
+  return res.status(404).send("Transaction not found");
+}
+
+// Delete the transaction from the transaction table
+await db("se_project.transaction")
+  .where("userid", userid)
+  .del();
       }
 
 
@@ -110,6 +140,7 @@ module.exports = function (app) {
   // Register HTTP endpoint for requesting senior assistance
   app.post("/api/v1/senior/request", async function (req, res) {
     try {
+      console.log("heree in req");
       const user = await getUser(req);
       const { nationalId } = req.body;
       console.log("heree");

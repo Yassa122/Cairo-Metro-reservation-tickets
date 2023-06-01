@@ -35,6 +35,14 @@ module.exports = function(app) {
     const users = await db.select('*').from('se_project.users');
     return res.render('users', { users });
   });
+  app.get('/requestRefund', async function(req, res) {
+    const tickets = await db.select('*').from('se_project.tickets');
+    return res.render('requestRefund', { tickets });
+  });
+  app.get('/requestSenior', async function(req, res) {
+
+    return res.render('requestSenior');
+  });
 
   // Register HTTP endpoint to render /courses page
   app.get('/stations', async function(req, res) {
