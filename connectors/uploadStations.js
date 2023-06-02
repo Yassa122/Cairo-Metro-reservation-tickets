@@ -101,10 +101,10 @@ async function uploadR() {
     ];
   
   for (let i = 0; i < routes.length; i++) {
-    const element =routes[i];
+    const element =routes[i];s
     await db("se_project.routes").insert(element).returning("*");
   }
 }
-//uploadS();// first to run
+uploadS();// first to run
 // uploadR();// second
-uploadSR();// third
+// uploadSR();// third
