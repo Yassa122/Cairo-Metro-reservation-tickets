@@ -153,6 +153,61 @@ module.exports = function (app) {
     }
   });
   
+  app.post("/api/v1/payment/subscription", async function (req, res) {
+    try {
+      const user = await getUser(req);
+      if (!user) {
+        return res.status(401).send("Unauthorized");
+      }
   
+      const { creditCardNumber, holderName, payedAmount, subType, zoneId } = req.body;
+  
+      // Validate input
+      if (!creditCardNumber || !holderName || !payedAmount || !subType || !zoneId) {
+        return res.status(400).send("Missing required fields");
+      }
+  
+      const paymentId = v4();
+  
+      let noOfTickets;
+      switch (subType) {
+        case 'annual':
+          noOfTickets = 100;
+          break;
+        case 'quarterly':
+          noOfTickets = 50;
+          break;
+        case 'monthly':
+          noOfTickets = 10;
+          break;
+        default:
+          return res.status(400).send("Invalid subscription type");
+      }
+  
+      // Insert into subscription table
+      const subscriptionId = await db("se_project.subscription")
+        .insert({
+          subtype: subType,
+          zoneid: zoneId,
+          userid: user.userid,
+          nooftickets: noOfTickets
+        })
+        .returning('id');
+  
+      // Insert into transactions table
+      await db("se_project.transactions")
+        .insert({
+          // id: paymentId,
+          amount: payedAmount,
+          userid: user.userid,
+          purchasediid: subscriptionId[0] // Use the subscription id as the purchased id
+        });
+  
+      return res.status(201).json({ message: "Payment successful", paymentId });
+    } catch (e) {
+      console.log(e.message);
+      return res.status(500).send("Error processing payment");
+    }
+  });
   
 }
