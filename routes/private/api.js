@@ -60,41 +60,86 @@ module.exports = function (app) {
   });
   //prices:Check Price 
   //working
-  app.get("/api/v1/tickets/price/:originId & :destinationId", async function (req, res) {
+  app.get("/api/v1/tickets/price/:originId/:destinationId", async function (req, res) {
     try {
       const { originId, destinationId } = req.params;
+      console.log("Origin ID:", originId);
+      console.log("Destination ID:", destinationId);
+      
       const origin = await db
         .select("*")
-        .from("se_project.zones")
+        .from("se_project.stations")
         .where("id", originId)
         .first();
       if (!origin) {
         return res.status(400).send("Origin not found");
       }
+      
       const destination = await db
         .select("*")
-        .from("se_project.zones")
+        .from("se_project.stations")
         .where("id", destinationId)
         .first();
       if (!destination) {
         return res.status(400).send("Destination not found");
       }
-      const price = await db
-
-        .select("*")
-        .from("se_project.prices")
-        .where("originid", originId)
-        .andWhere("destinationid", destinationId)
-        .first();
+      
+      // Find routes with up to 4 transfer stations
+      const query = `
+        SELECT r1.*, 
+               COUNT(*) - 1 AS transferStations 
+        FROM se_project.routes AS r1
+        INNER JOIN se_project.routes AS r2 ON r1.tostationid = r2.fromstationid
+        INNER JOIN se_project.routes AS r3 ON r2.tostationid = r3.fromstationid
+        INNER JOIN se_project.routes AS r4 ON r3.tostationid = r4.fromstationid
+        WHERE r1.fromstationid = ? AND r4.tostationid = ?
+        GROUP BY r1.id
+      `;
+      
+      console.log("SQL Query:", query);
+      
+      const routes = await db.raw(query, [originId, destinationId]);
+      
+      if (!routes || routes.length === 0) {
+        return res.status(400).send("No routes found");
+      }
+      
+      // Calculate price based on number of transfer stations
+      const basePrice = 10; // Adjust this to your desired base price
+      const transferStationRate = 5; // Adjust this to your desired rate per transfer station
+      
+      let price = null;
+      
+      for (const route of routes) {
+        const totalPrice = basePrice + (route.transferStations * transferStationRate);
+        price = {
+          routeId: route.id,
+          totalPrice: totalPrice
+        };
+        break; // Only consider the first valid route found
+      }
+      
       if (!price) {
         return res.status(400).send("Price not found");
       }
+      
+      // Apply discount for seniors
+      const isSenior = req.query.senior === "true";
+      if (isSenior) {
+        const discount = 0.25; // 25% discount for seniors
+        price.totalPrice *= (1 - discount);
+      }
+      
       return res.status(200).json(price);
     } catch (e) {
       console.log(e.message);
       return res.status(400).send("Could not get price");
     }
   });
+  
+  
+  
+  
   
   //senior request:request for senior role
   //working
