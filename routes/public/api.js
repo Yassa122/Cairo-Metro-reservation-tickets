@@ -3,7 +3,9 @@ const { v4 } = require("uuid");
 const db = require("../../connectors/db");
 const roles = require("../../constants/roles");
 module.exports = function (app) {
-app.post("/api/v1/user", async function (req, res) {
+
+  
+app.post("/api/v1/users", async function (req, res) {
 
     // Check if user already exists in the system
     const userExists = await db
@@ -32,7 +34,7 @@ app.post("/api/v1/user", async function (req, res) {
   });
 
   // Register HTTP endpoint to create new user
-  app.post("/api/v1/user/login", async function (req, res) {
+  app.post("/api/v1/users/login", async function (req, res) {
     // get users credentials from the JSON body
     const { email, password } = req.body;
     if (!email) {
