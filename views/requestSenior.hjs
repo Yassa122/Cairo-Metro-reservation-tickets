@@ -34,7 +34,10 @@
                     $.ajax({
                         type: "POST",
                         url: '/api/v1/senior/request',
-                        ,
+                        method: "POST",
+                        data: {
+                            nationalId
+                        },
                         success: function (serverResponse) {
                             if (serverResponse) {
                                 alert(JSON.stringify(serverResponse));
@@ -49,8 +52,8 @@
                 <div class="form-group">
                     <label for="nationalID" class="col-sm-2 control-label">National ID</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="nationalID" name="nationalID" placeholder="National ID"
-                            value="">
+                        <input type="text" class="form-control" id="nationalID" name="nationalID"
+                            placeholder="National ID" value="">
                     </div>
                 </div>
                 <button id="submit"> Request </button>

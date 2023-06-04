@@ -36,11 +36,11 @@
           });
       }
     </script>
-    
+
     <br />
     <table class="table">
       <thead>
-        mohamed yassergamed
+        
         {{#tickets}}
         <p class="ticket"> {{id}}</p>
         <div>{{origin}}</div>
