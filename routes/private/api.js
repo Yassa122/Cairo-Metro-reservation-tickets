@@ -32,7 +32,6 @@ const getUser = async function (req) {
   console.log("user =>", user)
   return user;
 };
-
 module.exports = function (app) {
   // example
   app.get("/users", async function (req, res) {

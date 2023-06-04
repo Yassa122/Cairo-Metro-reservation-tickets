@@ -43,4 +43,10 @@ module.exports = function(app) {
     return res.render('stations_example', { ...user, stations });
   });
 
+  app.get('/price', async function(req, res) {
+    const user = await getUser(req);
+    const stations = await db.select('*').from('se_project.stations');
+    return res.render('price', { ...user, stations });
+  });
+
 };
