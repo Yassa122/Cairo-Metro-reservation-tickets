@@ -1,0 +1,31 @@
+<script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+<script>
+  $(document).ready(function() {
+    $("#submit").click(function(event) {
+      event.preventDefault();
+      const email = $('#email').val();
+      const password = $('#password').val();
+
+      const data = {
+        email,
+        password,
+      };
+
+      $.ajax({
+        type: "POST",
+        url: '/api/v1/user/login',
+        data,
+        success: function(serverResponse) {
+          if (serverResponse) {
+            location.href = '/dashboard';
+          }
+        },
+        error: function(errorResponse) {
+          if (errorResponse) {
+            alert(`User login error: ${errorResponse.responseText}`);
+          }
+        }
+      });
+    });
+  });
+</script>

@@ -14,6 +14,7 @@ app.set('view engine', 'hjs');
 app.use(express.static('public'));
 app.use('/assets', express.static('assets'));
 
+
 // Config setup to parse JSON payloads from HTTP POST request body
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));

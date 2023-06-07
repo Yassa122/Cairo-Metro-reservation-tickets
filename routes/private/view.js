@@ -52,4 +52,15 @@ app.get('/subscriptions', async function(req, res) {
   return res.render('subscriptions', user);
 });
 
+app.get('/requestsRefund', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('requestsRefund', user);
+});
+
+app.get('/request/senior', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('request/senior', user);
+});
+
+
 };
