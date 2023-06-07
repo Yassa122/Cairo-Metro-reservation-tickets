@@ -217,7 +217,7 @@ module.exports = function (app) {
     }
   };
 
- 
+
     app.post("/api/v1/route", createRoute);
 
     // Rest of your routes
@@ -302,7 +302,7 @@ module.exports = function (app) {
   app.delete("/api/v1/route/:routeId", deleteRoute);
   
 
-  app.post("/manage/routes", createRoute);
+  
 
   app.get("/users", async function (req, res) {
     try {
@@ -316,5 +316,5 @@ module.exports = function (app) {
     }
   });
 
-  //jk
+
 };

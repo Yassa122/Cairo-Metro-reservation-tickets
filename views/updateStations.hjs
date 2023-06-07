@@ -18,18 +18,18 @@
 
         const data = {
           stationName
-        };
+         };
 
         $.ajax({
           type: "PUT",
-          url: `/api/v1/station/:stationId${stationId}`,
+          url: `/api/v1/station/${stationId}`,
           data,
           success: function(serverResponse) {
             if(serverResponse) {
               alert('Station updated successfully');
               location.href = '/';
             }
-          },
+          }, 
           error: function(errorResponse) {
             if(errorResponse) {
               alert(`Error updating station: ${errorResponse.responseText}`);
