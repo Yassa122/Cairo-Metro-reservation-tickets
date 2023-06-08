@@ -269,7 +269,7 @@ module.exports = function (app) {
         await db("se_project.stations")
           .where({ id: tostationid })
           .update({ stationstatus: "unconnected", stationposition: "start" });
-      }
+      }   
   
       return res.status(200).json({ message: "Route deleted successfully." });
     } catch (e) {
@@ -277,6 +277,77 @@ module.exports = function (app) {
       return res.status(400).send("Internal Server Error");
     }
   };
+  const getAllZones = async function (req, res) {
+    try {
+      const { zoneType, zoneId, price } = req.query;
+  
+      // Prepare the query filters based on the provided inputs
+      const filters = {};
+      if (zoneType) {
+        filters.zonetype = zoneType;
+      }
+      if (zoneId) {
+        filters.id = zoneId;
+      }
+      if (price) {
+        filters.price = price;
+      }
+  
+      // Fetch the zones from the database based on the filters
+      const zones = await db
+        .select("*")
+        .from("se_project.zones")
+        .where(filters);
+  
+      return res.status(200).json(zones);
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).send("Internal Server Error");
+    }
+  };
+  const updateZonePrice = async function (req, res) {
+    try {
+      const user = await getUser(req);
+  
+      // Check if the user is an admin
+      if (!user.isAdmin) {
+        return res.status(403).json({ error: "Only admin can update zone price." });
+      }
+  
+      const zoneId = req.params.zoneId;
+      const parsedZoneId = parseInt(zoneId);
+  
+      const { price } = req.body;
+  
+      // Check if the required fields are provided
+      if (!price) {
+        return res
+          .status(400)
+          .json({ error: "Invalid request. Missing required fields." });
+      }
+  
+      // Update the zone price in the database
+      const updatedZone = await db("se_project.zones")
+        .where({ id: parsedZoneId })
+        .update({ price })
+        .returning("*");
+  
+      // Check if the zone was successfully updated
+      if (updatedZone.length === 0) {
+        return res.status(404).json({ error: "Zone not found." });
+      }
+  
+      return res.status(200).json(updatedZone);
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).json({ error: "Internal Server Error" });
+    }
+  };
+  
+  app.put("/api/v1/zones/:zoneId", updateZonePrice);
+  
+  
+  app.get("/api/v1/zones", getAllZones);
   
   app.delete("/api/v1/route/:routeId", deleteRoute);
   
