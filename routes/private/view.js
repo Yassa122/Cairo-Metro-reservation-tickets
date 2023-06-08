@@ -57,7 +57,34 @@ module.exports = function(app) {
     return res.render('updateStations', user);
   });
 
+  app.get('/createRoute', async function(req, res) {
+    const user = await getUser(req);
+    return res.render('createRoute', user);
+  });
 
-  
+  app.get('/updateRoute', async function(req, res) {
+    const user = await getUser(req);
+    return res.render('updateRoute', user);
+  });
+
+  app.get('/deleteStations', async function(req, res) {
+    const user = await getUser(req);
+    return res.render('deleteStations', user);
+  });
+
+  app.get('/deleteRoute', async function(req, res) {
+    const user = await getUser(req);
+    return res.render('deleteRoute', user);
+  });
+
+  app.get('/getStations', async function(req, res) {
+    const user = await getUser(req);
+    return res.render('getStations', user);
+  });
+
+  app.get('/getRoute', async function(req, res) {
+    const user = await getUser(req);
+    return res.render('getRoute', user);
+  });
 
 };

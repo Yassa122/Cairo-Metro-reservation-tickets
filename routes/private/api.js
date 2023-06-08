@@ -117,66 +117,49 @@ module.exports = function (app) {
   
 
 
-  const deleteStation = async function (req, res) {
+  app.delete("/api/v1/station/:stationId", async function (req, res) {
     try {
+      const { stationId } = req.params;
       const user = await getUser(req);
   
-      // Check if the user is an admin
       if (!user.isAdmin) {
-        return res.status(403).json({ error: "Only admin can delete stations." });
+        return res.status(401).send("Unauthorized");
       }
   
-      const stationId = req.params.stationId;
-      const parsedStationId = parseInt(stationId);
+      const station = await db
+        .select("*")
+        .from("se_project.stations")
+        .where("id", stationId)
+        .first();
   
-      // Check if the station ID is provided
-      if (!parsedStationId) {
-        return res.status(400).json({ error: "Invalid request. Station ID is missing or invalid." });
+      if (!station) {
+        return res.status(404).send("Station not found");
       }
   
-      // Delete the station from the database
-      const deletedStation = await db("se_project.stations")
-        .where({ id: parsedStationId })
-        .del();
+      const { stationtype } = station;
   
-      // Check if the station was successfully deleted
-      if (deletedStation === 0) {
-        return res.status(404).json({ error: "Station not found." });
+      if (stationtype === "normal") {
+        // Delete the routes associated with the station
+        await db("se_project.stationroutes")
+          .where("stationid", stationId)
+          .delete();
+  
+        // Delete the station from the stations table
+        await db("se_project.stations")
+          .where("id", stationId)
+          .delete();
+  
+        return res.status(200).send("Station deleted successfully");
+      } else {
+        return res.status(400).send("Invalid station type");
       }
-  
-      // Delete the corresponding station routes from the database
-      await db("se_project.stationRoutes")
-        .where("startStationId", parsedStationId)
-        .orWhere("middleStationId", parsedStationId)
-        .orWhere("endStationId", parsedStationId)
-        .orWhere("transferStationId", parsedStationId)
-        .del();
-  
-      // Update the route names to substitute the deleted station in the database
-      await db("se_project.routes")
-        .where("startStationId", parsedStationId)
-        .orWhere("middleStationId", parsedStationId)
-        .orWhere("endStationId", parsedStationId)
-        .orWhere("transferStationId", parsedStationId)
-        .update({
-          startStationId: null,
-          middleStationId: null,
-          endStationId: null,
-          transferStationId: null,
-          routeName: "new"
-        });
-  
-      return res.status(200).json({ message: "Station deleted successfully." });
     } catch (e) {
       console.log(e.message);
-      return res.status(400).json({ error: "Internal Server Error" });
+      return res.status(400).send("Could not delete the station");
     }
-  };
-  
-  app.delete("/api/v1/station/:stationId", deleteStation);
-  
+  });
 
-
+ 
 
 
 
@@ -230,47 +213,6 @@ module.exports = function (app) {
     }
   });
   
-
-
-
-
-  // const createRoute = async function (req, res) {
-  //   try {
-  //     const user = await getUser(req);
-
-  //     // Check if the user is an admin
-  //     if (!user.isAdmin) {
-  //       return res.status(403).json({ error: "Only admin can create routes." });
-  //     }
-
-  //     const { tostationid, fromstationid, routename } = req.body;
-
-  //     // Check if the required fields are provided
-  //     if (!tostationid || !fromstationid || !routename) {
-  //       return res
-  //         .status(400)
-  //         .json({ error: "Invalid request. Missing required fields." });
-  //     }
-
-  //     // Perform any additional validations if needed
-
-  //     // Create the route in the database
-  //     const route = await db("se_project.routes").insert({
-  //       fromstationid: fromstationid,
-  //       tostationid: tostationid,
-  //       routename: routename,
-  //     });
-
-  //     return res.status(200).json({ message: "Route created successfully." });
-  //   } catch (e) {
-  //     console.log(e.message);
-  //     return res.status(400).json({ error: "Internal Server Error" });
-  //   }
-  // };
-
-
-  //   app.post("/api/v1/route", createRoute);
-
     // Rest of your routes
   
 
@@ -316,42 +258,92 @@ module.exports = function (app) {
     app.put("/api/v1/route/:routeId", updateRoute);
 
   // Rest of your routes
-  const deleteRoute = async function (req, res) {
+  // const deleteRoute = async function (req, res) {
+  //   try {
+  //     const user = await getUser(req);
+  
+  //     // Check if the user is an admin
+  //     if (!user.isAdmin) {
+  //       return res.status(403).send("Only admin can delete routes.");
+  //     }
+  
+  //     const routeId = req.params.routeId;
+  //     const parsedRouteId = parseInt(routeId);
+  
+  //     // Check if the route ID is provided
+  //     if (!parsedRouteId) {
+  //       return res.status(400).send("Invalid request. Route ID is missing or invalid.");
+  //     }
+  
+  //     // Delete the route from the database
+  //     const deletedRoute = await db("se_project.routes")
+  //       .where({ id: parsedRouteId })
+  //       .del();
+  
+  //     // Check if the route was successfully deleted
+  //     if (deletedRoute === 0) {
+  //       return res.status(404).send("Route not found.");
+  //     }
+  
+  //     return res.status(200).json({ message: "Route deleted successfully." });
+  //   } catch (e) {
+  //     console.log(e.message);
+  //     return res.status(400).send("Internal Server Error");
+  //   }
+  // };
+  
+  // app.delete("/api/v1/route/:routeId", deleteRoute);
+  
+  app.delete('/api/v1/route/:routeId', async (req, res) => {
     try {
       const user = await getUser(req);
+      if (user.isAdmin) {
+        const routeId = req.params.routeId;
+        //const stationId= req.params.stationId;
+        const routeDelete = await db('se_project.routes').where('id', routeId);
+        console.log(routeDelete)
+        if (routeDelete.length== 0) {
+          return res.status(404).json({ error: 'Route not found' });
+          
+        }
+        
+        const { fromstationid, tostationid } = routeDelete[0];
+        
+        
   
-      // Check if the user is an admin
-      if (!user.isAdmin) {
-        return res.status(403).send("Only admin can delete routes.");
+        //update position el 1 wla el 2
+        //check el route elly 3kso el to bt3to l 1 w from htb2a 2 mowgod wla la w en el 2 tb2a start
+        //msh mowgod position null from htkon null
+        //mowgod msh h3ml haga
+       console.log(tostationid);
+       console.log(fromstationid);
+      // Updating the position of the stations
+      const nextStation = await db('se_project.routes').where('tostationid', fromstationid).first();
+      if (nextStation) {
+        await db('se_project.stations').where('id', nextStation.fromstationid).update({ stationposition: 'start' });
+      
       }
-  
-      const routeId = req.params.routeId;
-      const parsedRouteId = parseInt(routeId);
-  
-      // Check if the route ID is provided
-      if (!parsedRouteId) {
-        return res.status(400).send("Invalid request. Route ID is missing or invalid.");
+      console.log(nextStation);
+      const prevStation = await db('se_project.routes').where('tostationid', tostationid).first();
+      if (prevStation) {
+        await db('se_project.stations').where('id', prevStation.fromstationid).update({ stationposition: 'start' });
       }
-  
-      // Delete the route from the database
-      const deletedRoute = await db("se_project.routes")
-        .where({ id: parsedRouteId })
-        .del();
-  
-      // Check if the route was successfully deleted
-      if (deletedRoute === 0) {
-        return res.status(404).send("Route not found.");
-      }
-  
-      return res.status(200).json({ message: "Route deleted successfully." });
-    } catch (e) {
-      console.log(e.message);
-      return res.status(400).send("Internal Server Error");
+      console.log(prevStation);
+      console.log('Route and connected stations deleted successfully');
+      await db('se_project.routes').where('id', routeId).del();
+      return res.status(200).json({ message: 'Route and connected stations deleted successfully' });
+    
     }
-  };
-  
-  app.delete("/api/v1/route/:routeId", deleteRoute);
-  
+    // else if(prevStation == stationposition){
+  //}
+      else {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error: 'Cannot delete the route' });
+  }
+  });
 
   
 
@@ -366,6 +358,29 @@ module.exports = function (app) {
       return res.status(400).send("Could not get users");
     }
   });
+
+  app.get("/manage/stations", async function (req, res) {
+    try {
+      const stations = await db.select("*").from("se_project.stations");
+  
+      return res.status(200).json(stations);
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).send("Could not retrieve stations");
+    }
+  });
+
+  app.get("/manage/routes", async function (req, res) {
+    try {
+      const routes = await db.select("*").from("se_project.routes");
+  
+      return res.status(200).json(routes);
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).send("Could not retrieve stations");
+    }
+  });
+  
 
 
 };
