@@ -181,88 +181,139 @@ module.exports = function (app) {
 
 
 
-
-
-  const createRoute = async function (req, res) {
+  app.post("/api/v1/route", async function (req, res) {
     try {
       const user = await getUser(req);
-
+  
       // Check if the user is an admin
       if (!user.isAdmin) {
         return res.status(403).json({ error: "Only admin can create routes." });
       }
-
-      const { tostationid, fromstationid, routename } = req.body;
-
+  
+      const { connectedStationId, newStationId, routename } = req.body;
+  
       // Check if the required fields are provided
-      if (!tostationid || !fromstationid || !routename) {
+      if (!connectedStationId || !newStationId || !routename) {
         return res
           .status(400)
           .json({ error: "Invalid request. Missing required fields." });
       }
-
-      // Perform any additional validations if needed
-
+  
+      // Check if the stations exist
+      const toStation = await db('se_project.stations').where({ id: connectedStationId }).first();
+      const fromStation = await db('se_project.stations').where({ id: newStationId }).first();
+  
+      if (!toStation || !fromStation) {
+        return res
+          .status(400)
+          .json({ error: "Invalid request. One or more stations do not exist." });
+      }
+  
       // Create the route in the database
-      const route = await db("se_project.routes").insert({
-        fromstationid: fromstationid,
-        tostationid: tostationid,
+      const [routeId] = await db("se_project.routes").insert({
+        fromstationid: newStationId,
+        tostationid: connectedStationId,
         routename: routename,
-      });
-
-      return res.status(200).json({ message: "Route created successfully." });
+        // assuming knex returns the ID of the created record
+      }).returning('id');
+  
+      // Associate the stations to the route
+      await db('se_project.stationroutes').insert([
+        { stationid: newStationId, routeid: routeId },
+        { stationid: connectedStationId, routeid: routeId },
+      ]);
+  
+      return res.status(201).json({ message: "Route created successfully." });
     } catch (e) {
-      console.log(e.message);
-      return res.status(400).json({ error: "Internal Server Error" });
+      console.error(e.message);
+      return res.status(500).json({ error: "Internal Server Error" });
     }
-  };
+  });
+  
 
 
-    app.post("/api/v1/route", createRoute);
+
+
+  // const createRoute = async function (req, res) {
+  //   try {
+  //     const user = await getUser(req);
+
+  //     // Check if the user is an admin
+  //     if (!user.isAdmin) {
+  //       return res.status(403).json({ error: "Only admin can create routes." });
+  //     }
+
+  //     const { tostationid, fromstationid, routename } = req.body;
+
+  //     // Check if the required fields are provided
+  //     if (!tostationid || !fromstationid || !routename) {
+  //       return res
+  //         .status(400)
+  //         .json({ error: "Invalid request. Missing required fields." });
+  //     }
+
+  //     // Perform any additional validations if needed
+
+  //     // Create the route in the database
+  //     const route = await db("se_project.routes").insert({
+  //       fromstationid: fromstationid,
+  //       tostationid: tostationid,
+  //       routename: routename,
+  //     });
+
+  //     return res.status(200).json({ message: "Route created successfully." });
+  //   } catch (e) {
+  //     console.log(e.message);
+  //     return res.status(400).json({ error: "Internal Server Error" });
+  //   }
+  // };
+
+
+  //   app.post("/api/v1/route", createRoute);
 
     // Rest of your routes
   
 
-  const updateRoute = async function (req, res) {
-    try {
-      const user = await getUser(req);
-
-      // Check if the user is an admin
-      if (!user.isAdmin) {
-        return res.status(403).send("Only admin can update routes.");
+    const updateRoute = async function (req, res) {
+      try {
+        const user = await getUser(req);
+    
+        // Check if the user is an admin
+        if (!user.isAdmin) {
+          return res.status(403).send("Only admin can update routes.");
+        }
+    
+        const routeId = req.params.routeId;
+        const routeid = parseInt(routeId);
+    
+        const { routeName } = req.body;
+    
+        // Check if the required fields are provided
+        if (!routeName) {
+          return res
+            .status(400)
+            .send("Invalid request. Missing required fields.");
+        }
+    
+        // Update the route name in the database
+        const updatedRoute = await db("se_project.routes")
+          .where({ id: routeid })
+          .update({ routename: routeName })
+          .returning("*");
+    
+        // Check if the route was successfully updated
+        if (updatedRoute.rowCount === 0) {
+          return res.status(404).send("Route not found.");
+        }
+    
+        return res.status(200).json(updatedRoute);
+      } catch (e) {
+        console.log(e.message);
+        return res.status(400).send("Internal Server Error");
       }
-
-      const routeId = req.params.routeId;
-      const routeid = parseInt(routeId);
-
-      const { routeName } = req.body;
-
-      // Check if the required fields are provided
-      if (!routeName) {
-        return res
-          .status(400)
-          .send("Invalid request. Missing required fields.");
-      }
-
-      // Update the route name in the database
-      const updatedRoute = await db("se_project.routes")
-        .where({ id: routeid })
-        .update({ routename: routeName })
-        .returning("*");
-
-      // Check if the route was successfully updated
-      if (updatedRoute.rowCount === 0) {
-        return res.status(404).send("Route not found.");
-      }
-
-      return res.status(200).json(updatedRoute);
-    } catch (e) {
-      console.log(e.message);
-      return res.status(400).send("Internal Server Error");
-    }
-  };
-
-  app.put("/api/v1/route/:routeId", updateRoute);
+    };
+    
+    app.put("/api/v1/route/:routeId", updateRoute);
 
   // Rest of your routes
   const deleteRoute = async function (req, res) {
