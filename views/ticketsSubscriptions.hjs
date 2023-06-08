@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Form-v3 by Colorlib</title>
+	<!-- Mobile Specific Metas -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<!-- Font-->
+	<link rel="stylesheet" type="text/css" href="assets/css/lora-font.css">
+	<link rel="stylesheet" type="text/css" href="assets/css/raleway-font.css">
+	<link rel="stylesheet" type="text/css" href="assets/fonts/material-design-iconic-font/css/material-design-iconic-font.min.css">
+	<!-- datepicker -->
+	<link rel="stylesheet" type="text/css" href="assets/css/jquery-ui.min.css">
+	<!-- Main Style Css -->
+    <link rel="stylesheet" href="assets/css/style.css"/>
+</head>
+<body class="form-v3">
+	<div class="page-content">
+		<div class="form-v3-content">
+			<form class="form-detail" action="/api/v1/payment/ticket" method="POST" id="myform">
+				<h2>Booking Tickets</h2>
+				<p class="text">Orci ac auctor augue mauris augue neque gravida in hendrerit gravida rutrum.</p>
+				<div class="form-group">
+					<div class="form-row form-row-1">
+						<label for="creditCardNumber">Credit Card Number:</label>
+						<input type="text" name="creditCardNumber" id="creditCardNumber" class="input-text" required>
+					</div>
+					<div class="form-row form-row-1">
+						<label for="holderName">Holder Name:</label>
+						<input type="text" name="holderName" id="holderName" class="input-text" required>
+					</div>
+				</div>
+				<div class="form-group form-group-1">
+					<div class="form-row form-row-2">
+						<label for="origin">Origin:</label>
+						<select id="origin" class="input-text" name="origin" required>
+							<option value="">Select Station</option>
+							<option value="Station1">Station1</option>
+							<option value="Station2">Station2</option>
+							<!-- Add more stations as needed -->
+						</select>
+					</div>
+					<div class="form-row form-row-2">
+						<label for="destination">Destination:</label>
+						<select id="destination" class="input-text" name="destination" required>
+							<option value="">Select Station</option>
+							<option value="Station1">Station1</option>
+							<option value="Station2">Station2</option>
+							<!-- Add more stations as needed -->
+						</select>
+					</div>
+					<div class="form-row form-row-2">
+						<label for="tripDate">Trip Date:</label>
+						<input type="text" name="tripDate" class="date" id="tripDate" placeholder="8/9/2018">
+					</div>
+					<div class="form-row form-row-2">
+						<label for="payedAmount">Paid Amount:</label>
+						<input type="number" id="payedAmount" class="input-text" name="payedAmount" title="Amount" required>
+					</div>
+				</div>
+				<div class="form-row-last">
+					<input type="submit" name="register" class="register" value="BUY NOW">
+				</div>
+			</form>
+			<div class="form-right">
+				<div class="form-images-1">
+					<img src="assets/images/form-v3-1.jpg" alt="form-v3-1">
+				</div>
+				<div class="form-images-2">
+					<img src="assets/images/form-v3-2.jpg" alt="form-v3-2">
+				</div>
+				<div class="form-icon-1">
+					<a href="#"><i class="zmdi zmdi-chevron-left"></i></a>
+				</div>
+				<div class="form-icon-2">
+					<a href="#"><i class="zmdi zmdi-chevron-right"></i></a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Jquery -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+ 	<script src="js/jquery-ui.min.js"></script>
+
+	<script type="text/javascript">
+	$( "#tripDate" ).datepicker({
+	    dateFormat: "mm/dd/yy",
+	    showOn: "both",
+	    buttonText : '<i class="zmdi zmdi-calendar-alt"></i>',
+	});
+
+	document.getElementById('myform').addEventListener('submit', function(e) {
+		e.preventDefault();
+
+		const creditCardNumber = document.getElementById('creditCardNumber').value;
+		const holderName = document.getElementById('holderName').value;
+		const payedAmount = document.getElementById('payedAmount').value;
+		const origin = document.getElementById('origin').value;
+		const destination = document.getElementById('destination').value;
+		let tripDate = document.getElementById('tripDate').value;
+
+		// Convert trip date to a timestamp
+		tripDate = new Date(tripDate).toISOString();
+
+		const data = { creditCardNumber, holderName, payedAmount, origin, destination, tripDate };
+
+		fetch('/api/v1/payment/ticket', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				// include additional headers as required
+			},
+			body: JSON.stringify(data),
+		})
+		.then(response => response.json())
+		.then(data => {
+			console.log(data);
+			if (data.message === 'Payment successful') {
+				alert('Payment successful!');
+			} else {
+				alert('Payment failed!');
+			}
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+			alert('Payment failed due to an error!');
+		});
+	});
+</script>
+
+
+</body>
+</html>

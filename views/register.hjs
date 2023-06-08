@@ -88,7 +88,7 @@
           const email = $('#email').val();
           const password = $('#password').val();
 
-          // Here you should add a condition to check if the two password fields match
+          // Here you should add a condition -                                              check if the two password fields match
           // If they don't, show an alert to the user
 
           const data = {

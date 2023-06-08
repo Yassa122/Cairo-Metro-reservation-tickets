@@ -52,6 +52,11 @@ app.get('/subscriptions', async function(req, res) {
   return res.render('subscriptions', user);
 });
 
+app.get('/subscriptions', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('subscriptions', user);
+});
+
 app.get('/requestsRefund', async function(req, res) {
   const user = await getUser(req);
   return res.render('requestsRefund', user);
@@ -60,6 +65,31 @@ app.get('/requestsRefund', async function(req, res) {
 app.get('/request/senior', async function(req, res) {
   const user = await getUser(req);
   return res.render('request/senior', user);
+});
+
+app.get('/createStations', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('createStations', user);
+});
+
+app.get('/updateStations', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('updateStations', user);
+});
+
+app.get('/ticketsSubscriptions', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('ticketsSubscriptions', user);
+});
+
+app.get('/getStations', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('getStations', user);
+});
+
+app.get('/getRoute', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('getRoute', user);
 });
 
 

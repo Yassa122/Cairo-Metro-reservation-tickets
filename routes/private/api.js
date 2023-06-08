@@ -72,6 +72,33 @@ module.exports = function (app) {
     }
   });
 // in progress
+
+app.get("/subscriptionss", async function (req, res) {
+  try {
+    // Assume that getUser is a function that extracts the user's data from the request
+    const user = await getUser(req);
+
+    // Check if the user was found
+    if (!user) {
+      return res.status(401).send("Unauthorized");
+    }
+
+    // Query the database for the subscriptions belonging to the user
+    const subscriptions = await db('se_project.subscription').where('userid', user.userid);
+
+    // If no subscriptions were found for the user, return a 404
+    if (subscriptions.length === 0) {
+      return res.status(404).send("No subscriptions found for this user");
+    }
+
+    // Return the user's subscriptions
+    return res.status(200).json(subscriptions);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).send("Could not retrieve subscriptions");
+  }
+});
+
   
 //WORKING
 app.post("/api/v1/payment/subscription", async function (req, res) {
@@ -516,60 +543,88 @@ app.post("/api/v1/senior/request", async function (req, res) {
   }
 });
 
-app.post("/api/v1/station", async function (req, res) {
+const createStation = async function (req, res) {
   try {
     const user = await getUser(req);
+
+    // Check if the user is an admin
     if (!user.isAdmin) {
-      return res.status(403).send("Only admins can create stations");
+      return res.status(403).json({ error: "Only admin can create stations." });
     }
-    
-    const { stationName, stationType, stationPosition, stationStatus } = req.body;
-    
-    if (!stationName) {
-      return res.status(400).send("All fields are required");
+
+    const { stationname, stationposition, stationstatus, stationtype } = req.body;
+
+    // Check if the required fields are provided
+    if (!stationname ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid request. Missing required fields." });
     }
+
+    // Perform any additional validations if needed
 
     // Create the station in the database
-    const station = {
-      stationname: stationName,
-      stationtype: "normal",
-      stationposition: "middle",
-      stationstatus: "new"
-    };
+    const station = await db("se_project.stations").insert({
+      stationname: stationname,
+      stationposition: "start",
+      stationstatus: "new",
+      stationtype: "normal"
+    });
 
-    // Save the station in the database
-    await db("se_project.stations").insert(station);
-
-    return res.status(201).json(station);
+    return res.status(200).json({ message: "Station created successfully." });
   } catch (e) {
     console.log(e.message);
-    return res.status(400).send("Could not create station");
+    return res.status(400).json({ error: "Internal Server Error" });
   }
-});
+};
+
+app.post("/api/v1/station", createStation);
+  
 
 
-app.put("/api/v1/station/:stationId", async function (req, res) {
+
+const updateStation = async function (req, res) {
   try {
-    // Extract the stationId and stationName from the request parameters and body
-    const { stationId } = req.params;
-    const { stationName } = req.body;
+    const user = await getUser(req);
 
-    // Check if stationName is provided
-    if (!stationName) {
-      return res.status(400).json({ error: "Station name is required" });
+    // Check if the user is an admin
+    if (!user.isAdmin) {
+      return res.status(403).json({ error: "Only admin can update stations." });
     }
 
-    // Update the station in the database
-    await db("se_project.stations")
-      .where({ id: stationId })
-      .update({ stationname: stationName });
+    const stationId = req.params.stationId;
+    const parsedStationId = parseInt(stationId);
 
-    return res.status(200).json({ message: "Station updated successfully" });
+    const { stationName } = req.body;
+
+    // Check if the required fields are provided
+    if (!stationName) {
+      return res
+        .status(400)
+        .json({ error: "Invalid request. Missing required fields." });
+    }
+
+    // Update the station name in the database
+    const updatedStation = await db("se_project.stations")
+      .where({ id: parsedStationId })
+      .update({ stationname: stationName })
+      .returning("*");
+
+    // Check if the station was successfully updated
+    if (updatedStation.length === 0) {
+      return res.status(404).json({ error: "Station not found." });
+    }
+
+    return res.status(200).json(updatedStation);
   } catch (e) {
     console.log(e.message);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(400).json({ error: "Internal Server Error" });
   }
-});
+};
+
+app.put("/api/v1/station/:stationId", updateStation);
+
+
 
 
 
@@ -728,80 +783,6 @@ const updateRoute = async function (req, res) {
 
 app.put("/api/v1/route/:routeId", updateRoute);
 
-// // Rest of your routes
-// const deleteRoute = async function (req, res) {
-//   try {
-//     const user = await getUser(req);
-
-//     // Check if the user is an admin
-//     if (!user.isAdmin) {
-//       return res.status(403).send("Only admin can delete routes.");
-//     }
-
-//     const routeId = req.params.routeId;
-//     const parsedRouteId = parseInt(routeId);
-
-//     // Check if the route ID is provided
-//     if (!parsedRouteId) {
-//       return res.status(400).send("Invalid request. Route ID is missing or invalid.");
-//     }
-
-//     // Fetch the route to be deleted
-//     const route = await db("se_project.routes")
-//       .where({ id: parsedRouteId })
-//       .first();
-
-//     // Check if the route exists
-//     if (!route) {
-//       return res.status(404).send("Route not found.");
-//     }
-
-//     const { fromstationid, tostationid } = route;
-
-//     // Delete the route from the database
-//     const deletedRoute = await db("se_project.routes")
-//       .where({ id: parsedRouteId })
-//       .del();
-
-//     // Check if the route was successfully deleted
-//     if (deletedRoute === 0) {
-//       return res.status(404).send("Route not found.");
-//     }
-
-//     // Update the unconnected stations' status and position
-//     const fromstationroutess = await db("se_project.routes")
-//       .where({ fromstationid })
-//       .select("id");
-
-//     const tostationroutess = await db("se_project.routes")
-//       .where({ tostationid })
-//       .select("id");
-
-//     if (isEmpty(fromstationroutess)) {
-//       // No routes from the fromstationid, update its status and position
-//       await db("se_project.stations")
-//         .where({ id: fromstationid })
-//         .update({ stationstatus: "unconnected", stationposition: "end" });
-//     }
-
-//     if (isEmpty(tostationroutess)) {
-//       // No routes to the tostationid, update its status and position
-//       await db("se_project.stations")
-//         .where({ id: tostationid })
-//         .update({ stationstatus: "unconnected", stationposition: "start" });
-//     }
-
-//     return res.status(200).json({ message: "Route deleted successfully." });
-//   } catch (e) {
-//     console.log(e.message);
-//     return res.status(400).send("Internal Server Error");
-//   }
-// };
-
-// app.delete("/api/v1/route/:routeId", deleteRoute);
-
-
-// app.post("/manage/routes", createRoute);
 
 
 //working
@@ -943,69 +924,110 @@ app.put("/api/v1/zones/:zoneId", updateZonePrice);
 
 
 app.delete("/api/v1/station/:stationId", async function (req, res) {
-  try {
-    const { stationId } = req.params;
-    const parsedStationId = parseInt(stationId, 10);
-
-    if (isNaN(parsedStationId)) {
-      return res.status(400).send("Invalid stationId");
-    }
-
-    const station = await db
-      .select("*")
-      .from("se_project.stations")
-      .where("id", parsedStationId)
-      .first();
-
-    if (!station) {
-      return res.status(404).send("Station not found");
-    }
-
-    const routes = await db
-      .select("*")
-      .from("se_project.routes")
-      .where("fromstationid", parsedStationId)
-      .orWhere("tostationid", parsedStationId);
-      
-    for(let route of routes) {
-      let newFromStationId = route.fromstationid;
-      let newToStationId = route.tostationid;
-      
-      if(route.fromstationid === parsedStationId || route.tostationid === parsedStationId) {
-        const stationroutess = await db
-          .select("*")
-          .from("se_project.stationroutess")
-          .where("routeid", route.id)
-          .orderBy('id');  
-          
-        for(let i = 0; i < stationroutess.length; i++) {
-          if(stationroutess[i].stationid === parsedStationId) {
-            if(i < stationroutess.length - 1) {  // there is a next station
-              if(route.fromstationid === parsedStationId) {
-                newFromStationId = stationroutess[i+1].stationid;
-              } else {  // route.tostationid === parsedStationId
-                newToStationId = stationroutess[i+1].stationid;
-              }
-            }
-            break;
-          }
-        }
+    try {
+      const { stationId } = req.params;
+      const user = await getUser(req);
+  
+      if (!user.isAdmin) {
+        return res.status(401).send("Unauthorized");
       }
+  
+      const station = await db
+        .select("*")
+        .from("se_project.stations")
+        .where("id", stationId)
+        .first();
+  
+      if (!station) {
+        return res.status(404).send("Station not found");
+      }
+  
+      const { stationtype } = station;
+  
+      if (stationtype === "normal") {
+        // Delete the routes associated with the station
+        await db("se_project.stationroutes")
+          .where("stationid", stationId)
+          .delete();
+  
+        // Delete the station from the stations table
+        await db("se_project.stations")
+          .where("id", stationId)
+          .delete();
+  
+        return res.status(200).send("Station deleted successfully");
+      } else {
+        return res.status(400).send("Invalid station type");
+      }
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).send("Could not delete the station");
+    }
+  });
 
-      await db("se_project.routes")
-        .where("id", route.id)
-        .update({
-          fromstationid: newFromStationId,
-          tostationid: newToStationId
-        });
-    }
 
-    await db("se_project.stations").where("id", parsedStationId).delete();
 
-    return res.status(200).send("Station deleted successfully");
+// app.delete("/api/v1/station/:stationId", async function (req, res) {
+//   try {
+//     const { stationId } = req.params;
+//     const user = await getUser(req);
+
+//     if (!user.isAdmin) {
+//       return res.status(401).send("Unauthorized");
+//     }
+
+//     const station = await db
+//       .select("*")
+//       .from("se_project.stations")
+//       .where("id", stationId)
+//       .first();
+
+//     if (!station) {
+//       return res.status(404).send("Station not found");
+//     }
+
+//     const { stationtype } = station;
+
+//     if (stationtype === "normal") {
+//       // Delete the routes associated with the station
+//       await db("se_project.stationroutes")
+//         .where("stationid", stationId)
+//         .delete();
+
+//       // Delete the station from the stations table
+//       await db("se_project.stations")
+//         .where("id", stationId)
+//         .delete();
+
+//       return res.status(200).send("Station deleted successfully");
+//     } else {
+//       return res.status(400).send("Invalid station type");
+//     }
+//   } catch (e) {
+//     console.log(e.message);
+//     return res.status(400).send("Could not delete the station");
+//     }
+//   });
+
+app.get("/manage/stations", async function (req, res) {
+  try {
+    const stations = await db.select("*").from("se_project.stations");
+
+    return res.status(200).json(stations);
   } catch (e) {
     console.log(e.message);
-    return res.status(500).send("Could not delete station");
+    return res.status(400).send("Could not retrieve stations");
+  }
+});
+
+app.get("/manage/routes", async function (req, res) {
+  try {
+    const routes = await db.select("*").from("se_project.routes");
+
+    return res.status(200).json(routes);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).send("Could not retrieve stations");
   }
 });
 

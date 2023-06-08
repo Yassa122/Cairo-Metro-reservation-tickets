@@ -1,0 +1,153 @@
+$colorPlanBasic: #fe397a;
+$colorPlanPro: #10bb87;
+$colorPlanEnterprise: #5d78ff;
+
+@mixin boxShadow {
+  box-shadow: 0 2px 40px 0 rgba(205, 205, 205, 0.55);
+}
+
+body {
+  font-family: 'Karla', sans-serif;
+}
+.pricing-table-subtitle {
+  margin-top: 68px;
+  font-weight: normal;
+}
+.pricing-table-title {
+  font-weight: bold;
+  margin-bottom: 68px;
+}
+
+.pricing-card {
+  border: none;
+  border-radius: 10px;
+  margin-bottom: 40px;
+  text-align: center;
+  transition: all 0.6s;
+
+  &:hover {
+    @include boxShadow();
+  }
+
+  &.pricing-card-highlighted {
+    @include boxShadow();
+  }
+
+  &:hover {
+    @include boxShadow();
+
+    transform: translateY(-10px);
+  }
+
+  .card-body {
+    padding-top: 55px;
+    padding-bottom: 62px;
+  }
+}
+
+.pricing-plan {
+
+  &-title {
+    font-size: 20px;
+    color: #000;
+    margin-bottom: 11px;
+    font-weight: normal;
+  }
+
+  &-cost {
+    font-size: 50px;
+    color: #000;
+    font-weight: bold;
+    margin-bottom: 29px;
+
+  }
+  
+  &-icon {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    font-size: 40px;
+    line-height: 1;
+    margin-bottom: 24px;
+
+    .pricing-plan-basic & {
+      color: $colorPlanBasic;
+    }
+
+    .pricing-plan-pro & {
+      color: $colorPlanPro;
+    }
+
+    .pricing-plan-enterprise & {
+      color: $colorPlanEnterprise;
+    }
+  }
+
+  &-features {
+    list-style: none;
+    padding-left: 0;
+    font-size: 14px;
+    line-height: 2.14;
+    margin-bottom: 35px;
+    color: #303132;
+
+  }
+
+  &-purchase-btn {
+    color: #000;
+    font-size: 16px;
+    font-weight: bold;
+    width: 145px;
+    height: 45px;
+    border-radius: 22.5px;
+    transition: all 0.4s;
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+
+    .pricing-plan-basic & {
+      background-color: $colorPlanBasic;
+      color: #fff;
+
+      &:hover {
+        box-shadow: 0 3px 0 0 darken($colorPlanBasic, 25%);
+      }
+
+      &:active {
+        transform: translateY(3px);
+        box-shadow: none;
+      }
+    }
+
+    .pricing-plan-pro & {
+      background-color: $colorPlanPro;
+      color: #fff;
+
+      &:hover {
+        box-shadow: 0 3px 0 0 darken($colorPlanPro, 15%);
+      }
+
+      &:active {
+        transform: translateY(3px);
+        box-shadow: none;
+      }
+    }
+
+    .pricing-plan-enterprise & {
+      background-color: $colorPlanEnterprise;
+      color: #fff;
+
+      &:hover {
+        box-shadow: 0 3px 0 0 darken($colorPlanEnterprise, 15%);
+      }
+
+      &:active {
+        transform: translateY(3px);
+        box-shadow: none;
+      }
+    }
+  }
+}
