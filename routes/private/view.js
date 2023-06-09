@@ -67,34 +67,57 @@ app.get('/request/senior', async function(req, res) {
   return res.render('request/senior', user);
 });
 
-app.get('/createStations', async function(req, res) {
-  const user = await getUser(req);
-  return res.render('createStations', user);
-});
 
-app.get('/updateStations', async function(req, res) {
-  const user = await getUser(req);
-  return res.render('updateStations', user);
-});
 
 app.get('/ticketsSubscriptions', async function(req, res) {
   const user = await getUser(req);
   return res.render('ticketsSubscriptions', user);
 });
 
-app.get('/getStations', async function(req, res) {
+app.get('/createStations', async function(req, res) {
   const user = await getUser(req);
-  return res.render('getStations', user);
+  return res.render('createStations', user);
+});
+app.get('/updateStations', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('updateStations', user);
 });
 
-app.get('/getRoute', async function(req, res) {
+app.get('/createRoute', async function(req, res) {
   const user = await getUser(req);
-  return res.render('getRoute', user);
+  return res.render('createRoute', user);
 });
 
-app.get('/getRoute', async function(req, res) {
+app.get('/updateRoute', async function(req, res) {
   const user = await getUser(req);
-  return res.render('getRoute', user);
+  return res.render('updateRoute', user);
 });
+
+app.get('/deleteStations', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('deleteStations', user);
+});
+
+app.get('/deleteRoute', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('deleteRoute', user);
+});
+
+app.get('/manage/stations', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('manage/stations', user);
+});
+
+app.get('/manage/routes', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('manage/routes', user);
+});
+app.get('/price', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('price', user);
+});
+
+
+
 
 };

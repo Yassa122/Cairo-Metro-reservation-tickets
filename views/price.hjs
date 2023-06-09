@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ticket Price Checker</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hogan.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    
+    select {
+      width: 300px;
+      padding: 5px;
+      font-size: 16px;
+    }
+    
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ticket Price Checker</h1>
+  
+  <form id="ticketForm">
+    <div>
+      <label for="origin">Origin Station:</label>
+      <select id="origin" name="origin">
+        <option value="">Select Origin Station</option>
+        <!-- Origin stations will be populated dynamically -->
+      </select>
+    </div>
+    <div>
+      <label for="destination">Destination Station:</label>
+      <select id="destination" name="destination">
+        <option value="">Select Destination Station</option>
+        <!-- Destination stations will be populated dynamically -->
+      </select>
+    </div>
+    <button type="submit">Check Price</button>
+  </form>
+  
+  <div id="result"></div>
+
+ <script id="stationOptionTemplate" type="text/x-hogan-template">
+  <option value="{{id}}">{{stationname}}</option>
+</script>
+
+  
+  <script>
+    // Function to populate the dropdown menu with station options
+    function populateDropdown(elementId, stations) {
+      var template = Hogan.compile(document.getElementById('stationOptionTemplate').innerHTML);
+      var optionsHtml = '';
+      
+      for (var i = 0; i < stations.length; i++) {
+        optionsHtml += template.render(stations[i]);
+      }
+      
+      document.getElementById(elementId).innerHTML = optionsHtml;
+    }
+    
+    // Fetch the station data from the server and populate the dropdown menus
+    axios.get('manage/stationss')
+    .then(function (response) {
+        var stations = response.data;
+        populateDropdown('origin', stations);
+        populateDropdown('destination', stations);
+  })
+  .catch(function (error) {
+    console.error(error);
+  });
+    
+    // Submit handler for the ticket form
+    document.getElementById('ticketForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      
+      var originId = document.getElementById('origin').value;
+      var destinationId = document.getElementById('destination').value;
+      
+      // Make API call to get the ticket price
+      axios.get('/api/v1/tickets/price/' + originId + '/' + destinationId)
+        .then(function (response) {
+          var price = response.data.price;
+          document.getElementById('result').textContent = 'Ticket Price: $' + price;
+        })
+        .catch(function (error) {
+          console.error(error);
+          document.getElementById('result').textContent = 'An error occurred while checking the ticket price.';
+        });
+    });
+  </script>
+</body>
+</html>
