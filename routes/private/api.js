@@ -656,7 +656,7 @@ app.get("/api/v1/tickets/price/:originId/:destinationId", async function (req, r
     destinationId = parseInt(destinationId);
 
 
-    // Fetch stations, routes and stationroutes data
+    // Fetch stations, routes and stationroutes data  
     const stations = await db.select('*').from('se_project.stations');
     const routes = await db.select('*').from('se_project.routes');
     const stationRoutes = await db.select('*').from('se_project.stationroutes');
