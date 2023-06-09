@@ -92,5 +92,9 @@ app.get('/getRoute', async function(req, res) {
   return res.render('getRoute', user);
 });
 
+app.get('/getRoute', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('getRoute', user);
+});
 
 };

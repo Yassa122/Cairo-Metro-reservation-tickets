@@ -1031,5 +1031,15 @@ app.get("/manage/routes", async function (req, res) {
   }
 });
 
+app.get('/api/v1/stations', async function(req, res) {
+  try {
+      const stations = await db.select('*').from('se_project.stations');
+      res.status(200).json(stations);
+  } catch (e) {
+      console.error(e.message);
+      res.status(500).send('An error occurred while processing your request.');
+  }
+});
+
 
 };
