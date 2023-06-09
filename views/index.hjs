@@ -26,7 +26,7 @@
             data,
             success: function(serverResponse) {
               if(serverResponse) {
-                location.href = '/dashboard';
+                location.href = '/admindashboard';
               }
             },
             error: function(errorResponse) {

@@ -25,10 +25,11 @@ const getUser = async function(req) {
 
 module.exports = function(app) {
   // Register HTTP endpoint to render /users page
-  app.get('/dashboard', async function(req, res) {
+  app.get('/admindashboard', async function(req, res) {
     const user = await getUser(req);
-    return res.render('dashboard', user);
+    return res.render('admindashboard', user);
   });
+
 
   // Register HTTP endpoint to render /users page
   app.get('/users', async function(req, res) {
@@ -106,5 +107,9 @@ app.get('/manage/seniorReq', async function(req, res) {
   return res.render('manage/seniorReq', user);
 });
 
+app.get('/price', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('price', user);
+});
 
 };
