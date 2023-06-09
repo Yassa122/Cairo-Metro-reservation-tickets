@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel='stylesheet' href='/styles/bootstrap.min.css' />
+  <link rel='stylesheet' href='/styles/style.css' />
+  <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+</head>
+<body>
+  
+<div>
+  <nav class="navbar navbar-inverse" style="padding-left:130px;">
+    <ul class="nav navbar-nav">
+      <li><a href="/">Home</a></li>
+    </ul>
+  </nav>
+</div>
+
+<div class="center">
+  <h1>Manage Routes</h1>
+</div>
+
+<div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Route Name</th>
+        <th>From Station ID</th>
+        <th>To Station ID</th>
+      </tr>
+    </thead>
+    <tbody id="routeTableBody"></tbody>
+  </table>
+</div>
+
+<script>
+  $(document).ready(function() {
+  // Function to render routes in the table
+  function renderRoutes(routes) {
+    var tableBody = $("#routeTableBody");
+    tableBody.empty();
+
+    routes.forEach(function(route) {
+      var row = $("<tr></tr>");
+
+      row.append($("<td></td>").text(route.id));
+      row.append($("<td></td>").text(route.routename));
+      row.append($("<td></td>").text(route.fromstationid));
+      row.append($("<td></td>").text(route.tostationid));
+
+      tableBody.append(row);
+    });
+  }
+
+  // Function to handle delete route
+  function deleteRoute(routeId) {
+    $.ajax({
+      type: "DELETE",
+      url: `/api/v1/route/${routeId}`,
+      success: function(response) {
+        alert(response.message);
+        location.reload();
+        // Refresh the routes table
+        $.ajax({
+          type: "GET",
+          url: '/manage/routess',
+          success: function(routes) {
+            renderRoutes(routes);
+          },
+          error: function(errorResponse) {
+            if (errorResponse) {
+              alert(`Error retrieving routes: ${errorResponse.responseText}`);
+            }
+          }
+        });
+      },
+      error: function(errorResponse) {
+        if (errorResponse) {
+          alert(`Error deleting route: ${errorResponse.responseText}`);
+        }
+      }
+    });
+  }
+
+  // AJAX request to get routes
+  $.ajax({
+    type: "GET",
+    url: '/manage/routess',
+    success: function(routes) {
+      renderRoutes(routes);
+    },
+    error: function(errorResponse) {
+      if (errorResponse) {
+        alert(`Error retrieving routes: ${errorResponse.responseText}`);
+      }
+    }
+  });
+
+  // Event handler for delete button click
+  $("#deleteRoute").click(function() {
+    var routeId = $("#routeId").val();
+    deleteRoute(routeId);
+  });
+});
+
+</script>
+
+<div class="center">
+  <h1>Delete Route</h1>
+</div>
+<div style="padding-left: 500px">
+  <form class="form-horizontal" style="width: 50%;">
+    <div class="form-group">
+      <label for="routeId" class="col-sm-2 control-label">Route ID</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="routeId" name="routeId" placeholder="Route ID" value="">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-10 col-sm-offset-2">
+        <input id="deleteRoute" name="deleteRoute" type="button" value="Delete Route" class="btn btn-danger">
+      </div>
+    </div>
+  </form>
+</div>
+
+ <div class="left">
+    <a href="/createRoute" class="btn btn-primary">Create Route</a>
+  </div>
+
+  <div class="right">
+    <a href="/updateRoute" class="btn btn-primary">Update Route</a>
+  </div>
+
+</body>
+</html>

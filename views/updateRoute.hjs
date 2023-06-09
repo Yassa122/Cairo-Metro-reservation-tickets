@@ -27,7 +27,7 @@
           success: function(serverResponse) {
             if(serverResponse) {
               alert('Route updated successfully');
-              location.href = '/';
+              location.reload();
             }
           }, 
           error: function(errorResponse) {
@@ -71,5 +71,8 @@
       </div>
   </form>
     </div>
+     <div class="left">
+    <a href="/manage/routes" class="btn btn-primary">Back to manage routes</a>
+  </div>
   </body>
 </html>

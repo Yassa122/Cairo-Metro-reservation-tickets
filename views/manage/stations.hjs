@@ -34,6 +34,8 @@
     </table>
   </div>
 
+  
+
   <div class="center">
     <h1>Delete Station</h1>
   </div>
@@ -51,6 +53,13 @@
         </div>
       </div>
     </form>
+  </div>
+
+  <div class="left">
+    <a href="/createStations" class="btn btn-primary">Create Station</a>
+  </div>
+  <div class="right">
+    <a href="/updateStations" class="btn btn-primary">Update Station</a>
   </div>
 
   <script>
@@ -76,7 +85,7 @@
       // AJAX request to get stations
       $.ajax({
         type: "GET",
-        url: '/manage/stations',
+        url: '/manage/stationss',
         success: function(stations) {
           renderStations(stations);
         },
@@ -97,7 +106,7 @@
           success: function(serverResponse) {
             if (serverResponse) {
               alert('Station deleted successfully');
-              location.href = '/';
+              location.reload();
             }
           },
           error: function(errorResponse) {

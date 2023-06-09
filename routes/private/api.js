@@ -359,7 +359,7 @@ module.exports = function (app) {
     }
   });
 
-  app.get("/manage/stations", async function (req, res) {
+  app.get("/manage/stationss", async function (req, res) {
     try {
       const stations = await db.select("*").from("se_project.stations");
   
@@ -370,7 +370,7 @@ module.exports = function (app) {
     }
   });
 
-  app.get("/manage/routes", async function (req, res) {
+  app.get("/manage/routess", async function (req, res) {
     try {
       const routes = await db.select("*").from("se_project.routes");
   

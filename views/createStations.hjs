@@ -32,7 +32,7 @@
           success: function(serverResponse) {
             if(serverResponse) {
               alert('Station created successfully');
-              location.href = '/';
+              location.reload();
             }
           },
           error: function(errorResponse) {
@@ -88,5 +88,8 @@
       </div>
   </form>
     </div>
+    <div class="left">
+    <a href="/manage/stations" class="btn btn-primary">Back to manage stations</a>
+  </div>
   </body>
 </html>

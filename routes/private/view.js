@@ -77,14 +77,15 @@ module.exports = function(app) {
     return res.render('deleteRoute', user);
   });
 
-  app.get('/getStations', async function(req, res) {
+  app.get('/manage/stations', async function(req, res) {
     const user = await getUser(req);
-    return res.render('getStations', user);
+    return res.render('manage/stations', user);
   });
 
-  app.get('/getRoute', async function(req, res) {
+  app.get('/manage/routes', async function(req, res) {
     const user = await getUser(req);
-    return res.render('getRoute', user);
+    return res.render('manage/routes', user);
   });
+
 
 };
