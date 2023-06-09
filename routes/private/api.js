@@ -307,6 +307,26 @@ app.post("/api/v1/tickets/purchase/subscription", async function (req, res) {
   
   app.put("/api/v1/zones/:zoneId", updateZonePrice);
   
+  app.post("/api/v1/senior/request", async function (req, res) {
+    try {
+      console.log("heree in req");
+      const user = await getUser(req);
+      const { nationalId } = req.body;
+      console.log("heree");
+      console.log(nationalId);
+      await db("se_project.senior_requests").insert({
+        status: "pending",
+        nationalid: nationalId,
+        userid: user.id
+      })
+
+      return res.status(200).send("Request sent successfully");
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).send("Could not process the request");
+    }
+  });
+
 
 
 
