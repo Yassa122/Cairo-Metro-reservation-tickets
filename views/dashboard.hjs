@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <!--     Fonts and icons     -->
+  <!-- Fonts and icons -->
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- Material Icons -->
@@ -53,10 +53,47 @@
             </a>
           </div>
 
-          </ul>
         </li>
-
-       
+        <!-- Added Subscription Dropdown -->
+        <li class="nav-item dropdown dropdown-hover mx-2">
+          <a class="nav-link ps-2 d-flex cursor-pointer align-items-center" id="dropdownMenuSubscriptions" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="material-icons opacity-6 me-2 text-md">subscriptions</i>
+            Subscriptions
+            <img src="./assets/img/down-arrow-white.svg" alt="down-arrow" class="arrow ms-auto ms-md-2">
+          </a>
+          <!-- Add your subscription options here -->
+          <div class="dropdown-menu dropdown-menu-animation dropdown-xl p-3 border-radius-xl mt-0 mt-lg-3" aria-labelledby="dropdownMenuSubscriptions">
+          </div>
+        </li>
+        <!-- End Subscription Dropdown -->
+        <!-- Added Tickets Dropdown -->
+        <li class="nav-item dropdown dropdown-hover mx-2">
+          <a class="nav-link ps-2 d-flex cursor-pointer align-items-center" id="dropdownMenuTickets" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="material-icons opacity-6 me-2 text-md">tickets</i>
+            Tickets
+            <img src="./assets/img/down-arrow-white.svg" alt="down-arrow" class="arrow ms-auto ms-md-2">
+          </a>
+          <!-- Add your ticket options here -->
+          <div class="dropdown-menu dropdown-menu-animation dropdown-xl p-3 border-radius-xl mt-0 mt-lg-3" aria-labelledby="dropdownMenuTickets">
+          </div>
+        </li>
+        <!-- End Tickets Dropdown -->
+        <!-- Added Reset Password and Logout options -->
+        <li class="nav-item mx-2">
+          <a class="nav-link ps-2 d-flex cursor-pointer align-items-center" href="#">
+            <i class="material-icons opacity-6 me-2 text-md">vpn_key</i>
+            Reset Password
+          </a>
+        </li>
+        <li class="nav-item mx-2">
+          <a class="nav-link ps-2 d-flex cursor-pointer align-items-center" href="#">
+            <i class="material-icons opacity-6 me-2 text-md">exit_to_app</i>
+            Logout
+          </a>
+        </li>
+        <!-- End Reset Password and Logout options -->
+      </ul>
+    </div>
 
         
 </nav>

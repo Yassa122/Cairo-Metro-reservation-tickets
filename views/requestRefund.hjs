@@ -5,46 +5,118 @@
   <title>Users</title>
   <link rel='stylesheet' href='/styles/bootstrap.min.css' />
   <link rel='stylesheet' href='/styles/style.css' />
+  <style>
+    /* Custom Styles */
+    body {
+      background-color: #f8f9fa;
+      padding-top: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    .navbar {
+      background-color: #333;
+      color: #fff;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .navbar ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+    }
+
+    .navbar li {
+      padding: 10px;
+    }
+
+    .navbar li a {
+      color: #fff;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .navbar li a:hover {
+      color: #f8f9fa;
+    }
+
+    .container {
+      max-width: 500px;
+      background-color: #fff;
+      border: 1px solid #e9ecef;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin: 0 auto;
+    }
+
+    .table {
+      margin-top: 20px;
+    }
+
+    .ticket {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .refund-btn {
+      background-color: #dc3545;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .refund-btn:hover {
+      background-color: #c82333;
+    }
+  </style>
   <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
   <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+  <script>
+    $(document).ready(function () {
+      $('.refund-btn').click(function () {
+        const ticketId = $(this).attr('data-ticket-id');
+
+        $.ajax({
+          type: 'POST',
+          url: `/api/v1/refund/${ticketId}`,
+          success: function (serverResponse) {
+            if (serverResponse) {
+              alert(JSON.stringify(serverResponse));
+            }
+          }
+        });
+      });
+    });
+  </script>
 </head>
 
 <body>
-  <div>
-    <div>
-      <nav class="navbar navbar-inverse" style="padding-left:130px;">
-        <ul class="nav navbar-nav">
-          <li><a href="/dashboard">Home</a></li>
-          <li><a href="/stations_example">Stations</a></li>
-          <li class="active"><a href="/users">Users</a></li>
-          <li><a href="/users/add">Add Users</a></li>
-          <li><a href="/">Logout</a></li>
-        </ul>
-      </nav>
-    </div>
-
-    <script>
-      function submit(ticketId){
-          $.ajax({
-            type: "POST",
-            url: `/api/v1/refund/${ticketId}`,
-            success: function (serverResponse) {
-              if (serverResponse) {
-                alert(JSON.stringify(serverResponse));
-              }
-            }
-          });
-      }
-    </script>
-
+  <div class="container">
+    <nav class="navbar navbar-inverse">
+      <ul class="nav navbar-nav">
+        <li><a href="/dashboard">Home</a></li>
+        <li><a href="/stations_example">Stations</a></li>
+        <li class="active"><a href="/users">Users</a></li>
+        <li><a href="/users/add">Add Users</a></li>
+        <li><a href="/">Logout</a></li>
+      </ul>
+    </nav>
     <br />
     <table class="table">
       <thead>
-        mohamed yassergamed
+
         {{#tickets}}
-        <p class="ticket"> {{id}}</p>
-        <div>{{origin}}</div>
-        <button onclick="submit({{id}})"> Request Refund </button>
+        <tr>
+          <td class="ticket"> {{id}}</td>
+          <td>{{origin}}</td>
+          <td><button class="refund-btn" onclick="submit({{id}})">Request Refund</button></td>
+        </tr>
         {{/tickets}}
       </thead>
     </table>

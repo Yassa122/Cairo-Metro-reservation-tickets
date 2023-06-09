@@ -167,7 +167,7 @@ document.getElementById('viewSubscriptions').addEventListener('click', function(
       // TODO: replace `userId` with the actual id of the user
       document.getElementById("zonesData").style.display = 'none';
   
-  const userId = "user1"; // Place user id here
+  const userId = "z"; // Place user id here
 
   fetch(`/subscriptionss?userId=${userId}`)
     .then(response => response.json())

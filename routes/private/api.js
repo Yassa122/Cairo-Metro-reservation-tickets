@@ -436,49 +436,6 @@ app.put("/api/v1/requests/refunds/:requestId", async function (req, res) {
   }
 });
 //working
-app.put("/api/v1/requests/senior/:requestId", async function (req, res) {
-  try {
-    const { requestId } = req.params;
-    const { status } = req.body;
-    
-    const user = await getUser(req);
-    if (!user.isAdmin) {
-      return res.status(403).send("Unauthorized");
-    }
-
-    const validStatuses = ["accepted", "rejected"];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).send("Invalid status value");
-    }
-
-    const parsedRequestId = parseInt(requestId, 10);
-    if (isNaN(parsedRequestId)) {
-      return res.status(400).send("Invalid requestId");
-    }
-
-    const seniorRequest = await db
-      .select("*")
-      .from("se_project.senior_requests")
-      .where("id", parsedRequestId)
-      .first();
-
-    if (!seniorRequest) {
-      return res.status(404).send("Senior request not found");
-    }
-
-    const updatedSeniorRequest = await db
-      .update({ status })
-      .from("se_project.senior_requests")
-      .where("id", parsedRequestId)
-      .returning("*")
-      .then((rows) => rows[0]);
-
-    return res.status(200).json(updatedSeniorRequest);
-  } catch (e) {
-    console.log(e.message);
-    return res.status(500).send("Could not update senior request");
-  }
-});
 
 //working
 
@@ -746,6 +703,8 @@ app.get("/api/v1/tickets/price/:originId/:destinationId", async function (req, r
   }
 });
 
+
+
 app.delete("/api/v1/station/:stationId", async function (req, res) {
   try {
     const { stationId } = req.params;
@@ -1010,15 +969,240 @@ app.get("/manage/routess", async function (req, res) {
   }
 });
 
-app.get('/requestRefund', async function(req, res) {
-  const tickets = await db.select('*').from('se_project.tickets');
-  return res.render('requestRefund', { tickets });
+
+app.get("/manage/requests/refunds", async function (req, res) {
+  try {
+    const routes = await db.select("*").from("se_project.refund_requests");
+
+    return res.status(200).json(routes);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).send("Could not retrieve stations");
+  }
 });
-app.get('/requestSenior', async function(req, res) {
 
-  return res.render('requestSenior');
+app.get("/manage/requests/seniors", async function (req, res) {
+  try {
+    const routes = await db.select("*").from("se_project.senior_requests");
+
+    return res.status(200).json(routes);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).send("Could not retrieve stations");
+  }
+});
+
+  app.put("/api/v1/password/reset", async function (req, res) {
+    try {
+      const user = await getUser(req);
+      const { newpassword } = req.body;
+      await db("se_project.users")
+        .where("id", user.userid)
+        .update({ password: newpassword });
+      return res.status(200).json("Your new password is: " + newpassword);
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).send("error updating password");
+    }
+  });
+
+app.get("/api/v1/zones", async function (req, res) {
+  try {
+    const zones = await db.select('*').from("se_project.zones");
+    return res.status(200).json(zones);
+  }   catch (e) {
+    console.log(e.message);
+    return res.status(500).send("Error retrieving zones data");
+  }
 });
 
 
 
+app.put("/api/v1/zones/:zoneId", updateZonePrice);
+
+
+app.get("/manage/requests/refunds", async function (req, res) {
+  try {
+    const routes = await db.select("*").from("se_project.refund_requests");
+
+    return res.status(200).json(routes);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).send("Could not retrieve stations");
+  }
+});
+
+app.get("/manage/requests/seniors", async function (req, res) {
+  try {
+    const routes = await db.select("*").from("se_project.senior_requests");
+
+    return res.status(200).json(routes);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).send("Could not retrieve stations");
+  }
+});
+
+app.get("/api/v1/tickets/price/:originId/:destinationId", async function (req, res) {
+  try {
+    let { originId, destinationId } = req.params;
+
+    originId = parseInt(originId);
+    destinationId = parseInt(destinationId);
+
+
+    // Fetch stations, routes and stationroutes data
+    const stations = await db.select('*').from('se_project.stations');
+    const routes = await db.select('*').from('se_project.routes');
+    const stationRoutes = await db.select('*').from('se_project.stationroutes');
+
+    // Transform data into a form suitable for BFS
+    const graph = transformDataForBfs(stations, routes, stationRoutes);
+
+    // Run BFS to find shortest path
+    const path = bfs(graph, originId, destinationId);
+
+    if (path.length === 0) {
+      return res.status(404).send('No route found between the specified stations.');
+    }
+
+    let price;
+    if (path.length <= 9) {
+      price = 5;
+    } else if (path.length <= 16) {
+      price = 7;
+    } else {
+      price = 10;
+    }
+
+    return res.status(200).json({ price });
+
+    function transformDataForBfs(stations, routes, stationRoutes) {
+      let graph = {};
+    
+      // Initialize the graph with station ids as keys and empty arrays as values
+      for (let station of stations) {
+        graph[station.id] = [];
+      }
+    
+      // Populate the adjacency list
+      for (let stationRoute of stationRoutes) {
+        let route = routes.find(route => route.id === stationRoute.routeid);
+        if (route) {
+          let { fromstationid, tostationid } = route;
+          // Check if the current station is the fromStation or the toStation in the route
+          if (stationRoute.stationid === fromstationid) {
+            graph[fromstationid].push(tostationid);
+          } else if (stationRoute.stationid === tostationid) {
+            graph[tostationid].push(fromstationid);
+          }
+        }
+      }
+    
+      return graph;
+    }
+    
+
+    function bfs(graph, startNode, endNode) {
+      let queue = [];
+      let visited = {};
+    
+      // Start from the starting node
+      queue.push([startNode]);
+      visited[startNode] = true;
+    
+      while(queue.length > 0) {
+        let path = queue.shift(); // get the path out from the queue
+        let node = path[path.length - 1]; // get the last node from the path
+    
+        if (node === endNode) {
+          // Path found
+          return path;
+        }
+    
+        for(let neighbor of graph[node]) {
+          if (!visited[neighbor]) {
+            visited[neighbor] = true; // mark node as visited
+            let newPath = [...path]; // create a new path
+            newPath.push(neighbor); // push the neighbor to the path
+            queue.push(newPath); // insert the new path to the queue
+          }
+        }
+      }
+    
+      // No path found
+      return [];
+    }
+    
+
+  } catch (e) {
+    console.error(e.message);
+    return res.status(500).send("An error occurred while processing your request.");
+  }
+});
+
+const acceptRejectSenior = async function (req, res) {
+  try {
+    const user = await getUser(req);
+
+    // Check if the user is an admin
+    if (!user.isAdmin) {
+      return res.status(403).json({ error: "Only admin can accept or reject senior requests." });
+    }
+
+    const { requestId } = req.params;
+    const { seniorStatus } = req.body;
+
+    // Check if the required fields are provided
+    if (!requestId || isEmpty(seniorStatus)) {
+      return res.status(400).json({ error: "Invalid request. Missing required fields." });
+    }
+
+    // Update the senior request status in the database
+    await db("se_project.senior_requests")
+      .where("id", requestId)
+      .update({ status: seniorStatus });
+
+    return res.status(200).json({ message: "Senior request updated successfully." });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).json({ error: "Internal Server Error" });
+  }
+};
+
+app.put("/api/v1/requests/senior/:requestId", acceptRejectSenior);
+
+
+const acceptRejectRefund = async function (req, res) {
+  try {
+    const user = await getUser(req);
+
+    // Check if the user is an admin
+    if (!user.isAdmin) {
+      return res.status(403).json({ error: "Only admin can accept or reject refund requests." });
+    }
+
+    const { requestId } = req.params;
+    const { refundStatus } = req.body;
+
+    // Check if the required fields are provided
+    if (!requestId || isEmpty(refundStatus)) {
+      return res.status(400).json({ error: "Invalid request. Missing required fields." });
+    }
+
+    // Update the senior request status in the database
+    await db("se_project.refund_requests")
+      .where("id", requestId)
+      .update({ status: refundStatus });
+
+    return res.status(200).json({ message: "Refund request updated successfully." });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).json({ error: "Internal Server Error" });
+  }
+};
+
+
+
+app.put("/api/v1/requests/refund/:requestId", acceptRejectRefund);
 };

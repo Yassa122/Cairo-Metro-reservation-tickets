@@ -25,9 +25,16 @@ const getUser = async function(req) {
 
 module.exports = function(app) {
   // Register HTTP endpoint to render /users page
+
   app.get('/dashboard', async function(req, res) {
     const user = await getUser(req);
-    return res.render('dashboard', user);
+    if(user.isAdmin){
+      return res.render('admindashboard', user);
+    }
+    else{
+      return res.render('dashboard', user);
+    }
+  
   });
 
   // Register HTTP endpoint to render /users page
@@ -117,7 +124,46 @@ app.get('/price', async function(req, res) {
   return res.render('price', user);
 });
 
+app.get('/requestRefund', async function(req, res) {
+  const tickets = await db.select('*').from('se_project.tickets');
+  return res.render('requestRefund', { tickets });
+});
+app.get('/requestSenior', async function(req, res) {
 
+  return res.render('requestSenior');
+});
+app.get('/admindashboard', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('admindashboard', user);
+});
+
+app.get('/manage/zones', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('manage/zones', user);
+});
+app.get('/manage/refundReq', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('manage/refundReq', user);
+});
+
+app.get('/manage/seniorReq', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('manage/seniorReq', user);
+});
+
+app.get('/price', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('price', user);
+});
+
+app.get('/refunds', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('refunds', user);
+});
+app.get('/manageZones', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('manageZones', user);
+});
 
 
 };
