@@ -468,6 +468,104 @@ app.get("/manage/requests/seniors", async function (req, res) {
   }
 });
 
+app.get("/api/v1/tickets/price/:originId/:destinationId", async function (req, res) {
+  try {
+    let { originId, destinationId } = req.params;
+
+    originId = parseInt(originId);
+    destinationId = parseInt(destinationId);
+
+
+    // Fetch stations, routes and stationroutes data
+    const stations = await db.select('*').from('se_project.stations');
+    const routes = await db.select('*').from('se_project.routes');
+    const stationRoutes = await db.select('*').from('se_project.stationroutes');
+
+    // Transform data into a form suitable for BFS
+    const graph = transformDataForBfs(stations, routes, stationRoutes);
+
+    // Run BFS to find shortest path
+    const path = bfs(graph, originId, destinationId);
+
+    if (path.length === 0) {
+      return res.status(404).send('No route found between the specified stations.');
+    }
+
+    let price;
+    if (path.length <= 9) {
+      price = 5;
+    } else if (path.length <= 16) {
+      price = 7;
+    } else {
+      price = 10;
+    }
+
+    return res.status(200).json({ price });
+
+    function transformDataForBfs(stations, routes, stationRoutes) {
+      let graph = {};
+    
+      // Initialize the graph with station ids as keys and empty arrays as values
+      for (let station of stations) {
+        graph[station.id] = [];
+      }
+    
+      // Populate the adjacency list
+      for (let stationRoute of stationRoutes) {
+        let route = routes.find(route => route.id === stationRoute.routeid);
+        if (route) {
+          let { fromstationid, tostationid } = route;
+          // Check if the current station is the fromStation or the toStation in the route
+          if (stationRoute.stationid === fromstationid) {
+            graph[fromstationid].push(tostationid);
+          } else if (stationRoute.stationid === tostationid) {
+            graph[tostationid].push(fromstationid);
+          }
+        }
+      }
+    
+      return graph;
+    }
+    
+
+    function bfs(graph, startNode, endNode) {
+      let queue = [];
+      let visited = {};
+    
+      // Start from the starting node
+      queue.push([startNode]);
+      visited[startNode] = true;
+    
+      while(queue.length > 0) {
+        let path = queue.shift(); // get the path out from the queue
+        let node = path[path.length - 1]; // get the last node from the path
+    
+        if (node === endNode) {
+          // Path found
+          return path;
+        }
+    
+        for(let neighbor of graph[node]) {
+          if (!visited[neighbor]) {
+            visited[neighbor] = true; // mark node as visited
+            let newPath = [...path]; // create a new path
+            newPath.push(neighbor); // push the neighbor to the path
+            queue.push(newPath); // insert the new path to the queue
+          }
+        }
+      }
+    
+      // No path found
+      return [];
+    }
+    
+
+  } catch (e) {
+    console.error(e.message);
+    return res.status(500).send("An error occurred while processing your request.");
+  }
+});
+
 const acceptRejectSenior = async function (req, res) {
   try {
     const user = await getUser(req);
@@ -528,6 +626,8 @@ const acceptRejectRefund = async function (req, res) {
     return res.status(400).json({ error: "Internal Server Error" });
   }
 };
+
+
 
 app.put("/api/v1/requests/refund/:requestId", acceptRejectRefund);
 };
