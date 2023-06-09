@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel='stylesheet' href='/styles/bootstrap.min.css' />
+  <link rel='stylesheet' href='/styles/style.css' />
+  <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+</head>
+<body>
+  <div>
+    <nav class="navbar navbar-inverse" style="padding-left:130px;">
+      <ul class="nav navbar-nav">
+        <li><a href="/">Home</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="center">
+    <h1>Manage Senior Requests</h1>
+  </div>
+
+  <div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Status</th>
+          <th>User ID</th>
+          <th>National ID</th>
+          <th>Action</th> <!-- New column for accepting/rejecting requests -->
+        </tr>
+      </thead>
+      <tbody id="seniorRequestsTableBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      // Function to render senior requests in the table
+      function renderSeniorRequests(requests) {
+        var tableBody = $("#seniorRequestsTableBody");
+        tableBody.empty();
+
+        requests.forEach(function(request) {
+          var row = $("<tr></tr>");
+
+          row.append($("<td></td>").text(request.id));
+          row.append($("<td></td>").text(request.status));
+          row.append($("<td></td>").text(request.userid));
+          row.append($("<td></td>").text(request.nationalid));
+          
+          var actionCell = $("<td></td>");
+
+          // Create buttons for accepting and rejecting the request
+          var acceptButton = $("<button class='btn btn-success'>Accept</button>");
+          var rejectButton = $("<button class='btn btn-danger'>Reject</button>");
+
+          // Attach click event handlers to the buttons
+          acceptButton.click(function() {
+            acceptRejectRequest(request.id, "accepted");
+          });
+
+          rejectButton.click(function() {
+            acceptRejectRequest(request.id, "rejected");
+          });
+
+          // Append the buttons to the action cell
+          actionCell.append(acceptButton);
+          actionCell.append(rejectButton);
+
+          row.append(actionCell);
+
+          tableBody.append(row);
+        });
+      }
+
+      // Function to accept or reject a request
+      function acceptRejectRequest(requestId, requestStatus) {
+        // AJAX request to update the senior request
+        $.ajax({
+          type: "PUT",
+          url: `/api/v1/requests/senior/${requestId}`,
+          data: JSON.stringify({ seniorStatus: requestStatus }),
+          contentType: "application/json",
+          success: function(response) {
+            alert(response.message);
+            // Reload the senior requests after updating
+            loadSeniorRequests();
+          },
+          error: function(errorResponse) {
+            if (errorResponse) {
+              alert(`Error updating senior request: ${errorResponse.responseText}`);
+            }
+          }
+        });
+      }
+
+      // Function to load senior requests
+      function loadSeniorRequests() {
+        // AJAX request to get senior requests
+        $.ajax({
+          type: "GET",
+          url: '/manage/requests/seniors',
+          success: function(requests) {
+            renderSeniorRequests(requests);
+          },
+          error: function(errorResponse) {
+            if (errorResponse) {
+              alert(`Error retrieving senior requests: ${errorResponse.responseText}`);
+            }
+          }
+        });
+      }
+
+      // Load senior requests on page load
+      loadSeniorRequests();
+    });
+  </script>
+</body>
+</html>

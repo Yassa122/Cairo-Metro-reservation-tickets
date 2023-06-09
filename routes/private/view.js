@@ -87,5 +87,24 @@ module.exports = function(app) {
     return res.render('manage/routes', user);
   });
 
+  app.get('/resetPassword', async function(req, res) {
+    const user = await getUser(req);
+    return res.render('resetPassword', user);
+});
+
+app.get('/manage/zones', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('manage/zones', user);
+});
+app.get('/manage/refundReq', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('manage/refundReq', user);
+});
+
+app.get('/manage/seniorReq', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('manage/seniorReq', user);
+});
+
 
 };

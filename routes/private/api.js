@@ -382,5 +382,152 @@ module.exports = function (app) {
   });
   
 
+  app.put("/api/v1/password/reset", async function (req, res) {
+    try {
+      const user = await getUser(req);
+      const { newpassword } = req.body;
+      await db("se_project.users")
+        .where("id", user.userid)
+        .update({ password: newpassword });
+      return res.status(200).json("Your new password is: " + newpassword);
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).send("error updating password");
+    }
+  });
 
+app.get("/api/v1/zones", async function (req, res) {
+  try {
+    const zones = await db.select('*').from("se_project.zones");
+    return res.status(200).json(zones);
+  }   catch (e) {
+    console.log(e.message);
+    return res.status(500).send("Error retrieving zones data");
+  }
+});
+
+const updateZonePrice = async function (req, res) {
+  try {
+    const user = await getUser(req);
+
+    // Check if the user is an admin
+    if (!user.isAdmin) {
+      return res.status(403).json({ error: "Only admin can update zone prices." });
+    }
+
+    const { price } = req.body;
+    const { zoneId } = req.params;
+
+    // Check if the required fields are provided
+    if (!price || !zoneId) {
+      return res
+        .status(400)
+        .json({ error: "Invalid request. Missing required fields." });
+    }
+
+    // Perform any additional validations if needed
+
+    // Update the zone price in the database
+    const update = await db("se_project.zones")
+      .where({ id: zoneId })
+      .update({ price: price });
+
+    if (update === 0) {
+      return res.status(404).json({ error: "Zone not found." });
+    }
+
+    return res.status(200).json({ message: "Zone price updated successfully." });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).json({ error: "Internal Server Error" });
+  }
+};
+
+app.put("/api/v1/zones/:zoneId", updateZonePrice);
+
+
+app.get("/manage/requests/refunds", async function (req, res) {
+  try {
+    const routes = await db.select("*").from("se_project.refund_requests");
+
+    return res.status(200).json(routes);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).send("Could not retrieve stations");
+  }
+});
+
+app.get("/manage/requests/seniors", async function (req, res) {
+  try {
+    const routes = await db.select("*").from("se_project.senior_requests");
+
+    return res.status(200).json(routes);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).send("Could not retrieve stations");
+  }
+});
+
+const acceptRejectSenior = async function (req, res) {
+  try {
+    const user = await getUser(req);
+
+    // Check if the user is an admin
+    if (!user.isAdmin) {
+      return res.status(403).json({ error: "Only admin can accept or reject senior requests." });
+    }
+
+    const { requestId } = req.params;
+    const { seniorStatus } = req.body;
+
+    // Check if the required fields are provided
+    if (!requestId || isEmpty(seniorStatus)) {
+      return res.status(400).json({ error: "Invalid request. Missing required fields." });
+    }
+
+    // Update the senior request status in the database
+    await db("se_project.senior_requests")
+      .where("id", requestId)
+      .update({ status: seniorStatus });
+
+    return res.status(200).json({ message: "Senior request updated successfully." });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).json({ error: "Internal Server Error" });
+  }
+};
+
+app.put("/api/v1/requests/senior/:requestId", acceptRejectSenior);
+
+
+const acceptRejectRefund = async function (req, res) {
+  try {
+    const user = await getUser(req);
+
+    // Check if the user is an admin
+    if (!user.isAdmin) {
+      return res.status(403).json({ error: "Only admin can accept or reject refund requests." });
+    }
+
+    const { requestId } = req.params;
+    const { refundStatus } = req.body;
+
+    // Check if the required fields are provided
+    if (!requestId || isEmpty(refundStatus)) {
+      return res.status(400).json({ error: "Invalid request. Missing required fields." });
+    }
+
+    // Update the senior request status in the database
+    await db("se_project.refund_requests")
+      .where("id", requestId)
+      .update({ status: refundStatus });
+
+    return res.status(200).json({ message: "Refund request updated successfully." });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(400).json({ error: "Internal Server Error" });
+  }
+};
+
+app.put("/api/v1/requests/refund/:requestId", acceptRejectRefund);
 };
