@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Zone Price</title>
+  <link rel='stylesheet' href='/styles/bootstrap.min.css' />
+  <link rel='stylesheet' href='/styles/style.css' />
+  <style>
+    /* Custom Styles */
+    body {
+      background-color: #f8f9fa;
+      padding-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 500px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border: 1px solid #e9ecef;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      font-weight: bold;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+      background-color: #0069d9;
+      border-color: #0069d9;
+    }
+  </style>
+  <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+</head>
+<body>
+  <div class="container">
+    <nav class="navbar navbar-inverse">
+      <ul class="nav navbar-nav">
+        <li><a href="/dashboard">Home</a></li>
+        <li><a href="/stations_example">Stations</a></li>
+        <li><a href="/users">Users</a></li>
+        <li><a href="/users/add">Add Users</a></li>
+        <li><a href="/">Logout</a></li>
+      </ul>
+    </nav>
+
+    <h2>Update Zone Price</h2>
+    <form id="zonePriceForm">
+      <div class="form-group">
+        <label class="form-label" for="zoneId">Zone ID:</label>
+        <input class="form-control" type="text" id="zoneId" name="zoneId" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="zoneType">Zone Type:</label>
+        <input class="form-control" type="text" id="zoneType" name="zoneType" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="price">Price:</label>
+        <input class="form-control" type="number" id="price" name="price" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Update Price</button>
+    </form>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      $('#zonePriceForm').submit(function(event) {
+        event.preventDefault();
+        const zoneId = $('#zoneId').val();
+        const zoneType = $('#zoneType').val();
+        const price = $('#price').val();
+
+        const data = {
+          zoneId,
+          zoneType,
+          price,
+        };
+
+        $.ajax({
+          type: 'PUT',
+          url: '/api/v1/zones/' + zoneId,
+          data,
+          success: function(serverResponse) {
+            if (serverResponse) {
+              alert('Successfully updated');
+              location.href = '/';
+            }
+          },
+          error: function(errorResponse) {
+            if (errorResponse) {
+              alert(`Error: ${errorResponse.responseText}`);
+            }
+          },
+        });
+      });
+    });
+  </script>
+</body>
+</html>

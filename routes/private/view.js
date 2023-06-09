@@ -37,10 +37,39 @@ module.exports = function(app) {
   });
 
   // Register HTTP endpoint to render /courses page
-  app.get('/stations', async function(req, res) {
+  app.get('/stations_example', async function(req, res) {
     const user = await getUser(req);
     const stations = await db.select('*').from('se_project.stations');
     return res.render('stations_example', { ...user, stations });
   });
+  app.get('/resetPassword', async function(req, res) {
+    const user = await getUser(req);
+    return res.render('resetPassword', user);
+});
+
+app.get('/subscriptions', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('subscriptions', user);
+});
+
+
+app.get('/tickets', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('tickets', user);
+});
+
+app.get('/dashboard', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('dashboard', user);
+});
+app.get('/refunds', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('refunds', user);
+});
+app.get('/manageZones', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('manageZones', user);
+});
+
 
 };

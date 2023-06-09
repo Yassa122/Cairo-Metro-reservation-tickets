@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <style>
+      body {
+        background-color: #f2f2f2;
+      }
+
+      .navbar-inverse {
+        background-color: #333;
+        border-color: #333;
+      }
+
+      .navbar-inverse .navbar-nav>li>a {
+        color: #fff;
+      }
+
+      .center {
+        text-align: center;
+        margin-top: 50px;
+      }
+
+      .form-horizontal {
+        margin: 0 auto;
+        width: 50%;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px #ccc;
+      }
+
+      .form-horizontal .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-horizontal .form-control {
+        border-radius: 0;
+      }
+
+      .form-horizontal .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+      }
+
+      .form-horizontal .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <script>
+    $(document).ready(function(){    
+      // Handle Registration Button Click
+      $("#register").click(function() {
+        const refundStatus = $('#refundStatus').val();
+       
+        const data = {
+          refundStatus,
+        };
+
+        $.ajax({
+          type: "put",
+          url: '/api/v1/requests/refunds/:requestId',
+          data,
+          success: function(serverResponse) {
+            if(serverResponse) {
+              alert('Successfully refunded');
+              location.href = '/';
+            }
+          },
+          error: function(errorResponse) {
+            if(errorResponse) {
+              alert(`Error: ${errorResponse.responseText}`);
+            }            
+          }
+        });
+      });      
+    });
+    </script>
+    <nav class="navbar navbar-inverse">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Home</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="center">
+      <h1>Refund Tickets</h1>
+    </div>
+    <div class="container">
+      <form class="form-horizontal">
+        <div class="form-group">
+            <label for="refundStatus" class="col-sm-2 control-label">Refund Status</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="refundStatus" name="refundStatus" placeholder="Refund Status">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-10 col-sm-offset-2">
+                <input id="register" name="register" type="button" value="Refund" class="btn btn-primary">
+            </div>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

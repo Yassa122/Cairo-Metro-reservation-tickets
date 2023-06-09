@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tickets Page</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-top: 20px;
+    }
+
+    .ticket {
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      max-width: 500px;
+      box-shadow: 0px 0px 5px #ccc;
+      background-color: #fff;
+    }
+
+    .ticket h2 {
+      color: #007bff;
+      font-size: 24px;
+      margin-top: 0;
+    }
+
+    .ticket p {
+      margin: 10px 0;
+      color: #333;
+    }
+
+    .ticket input[type="text"] {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    .ticketPrice {
+      font-size: 18px;
+      font-weight: bold;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tickets</h1>
+
+  <!-- Ticket template -->
+  <div class="ticket">
+    <h2>Metro Ticket</h2>
+    <p>Credit Card Number:
+      <select id="idCreditCardNumber" class="select2">
+        <option value="1111-1111-1111-1111">1111-1111-1111-1111</option>
+        <option value="2222-2222-2222-2222">2222-2222-2222-2222</option>
+        <option value="3333-3333-3333-3333">3333-3333-3333-3333</option>
+        <!-- Add more options as needed -->
+      </select>
+    </p>
+    <p>Holder Name: <input type="text" id="idHolderName"></p>
+    <p>Payed Amount: <input type="text" id="idPayedAmount"></p>
+    <p>Origin: <input type="text" id="idOrigin"></p>
+    <p>To: <input type="text" id="idDestination"></p>
+    <p>Trip Date: <input type="text" id="idTripDate"></p>
+    <p>Subtype: <input type="text" id="idSubType"></p>
+    <p>Zone ID: <input type="text" id="idZoneId"></p>
+    <p>User ID: <input type="text" id="idUserId"></p>
+    <p>No. of Tickets: <input type="text" id="idNoOfTickets"></p>
+
+    <button class="btn" id="buyTicketBtn">Purchase</button>
+    <button class="btn" id="calculatePriceBtn">Calculate Price</button>
+    <p>Price: <span id="ticketPrice"></span></p>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      // Initialize select2 for credit card numbers
+      $('.select2').select2();
+
+      // Handle ticket purchase button click
+      $("#buyTicketBtn").click(function() {
+        const creditCardNumber = parseInt($('#idCreditCardNumber').val());
+        const holderName = $('#idHolderName').val();
+        const payedAmount = parseInt($('#idPayedAmount').val());
+        const origin = $('#idOrigin').val();
+        const destination = $('#idDestination').val();
+        const tripDate = $('#idTripDate').val();
+        const subType = $('#idSubType').val();
+        const zoneId = $('#idZoneId').val();
+        const userId = $('#idUserId').val();
+        const noOfTickets = parseInt($('#idNoOfTickets').val());
+
+        const data = {
+          creditCardNumber,
+          holderName,
+          payedAmount,
+          origin,
+          destination,
+          tripDate,
+          subType,
+          zoneId,
+          userId,
+          noOfTickets
+        };
+
+        // Set the values for "From" and "To"
+        $("#ticketFrom").text(origin);
+        $("#ticketTo").text(destination);
+
+        $.ajax({
+          type: "POST",
+          url: '/api/v1/payment/ticket',
+          data,
+          success: function(response) {
+            alert(response.message);
+            // Redirect to tickets page after successful purchase
+            location.href = '/tickets/' + response.ticketId;
+          },
+          error: function(error) {
+            alert(`Error : ${error.responseText}`);
+          }
+        });
+      });
+
+      // Handle calculate price button click
+      $("#calculatePriceBtn").click(function() {
+        const origin = $('#idOrigin').val();
+        const destination = $('#idDestination').val();
+
+        // Replace with your price calculation logic
+        const price = calculatePrice(origin, destination);
+        $("#ticketPrice").text(price);
+      });
+
+      // Function to calculate the price based on origin and destination
+      function calculatePrice(origin, destination) {
+        // Replace with your price calculation logic
+        // Example logic: Assuming $10 per trip distance
+        const distance = calculateDistance(origin, destination);
+        const price = distance * 10;
+        return price;
+      }
+
+      // Function to calculate the distance between origin and destination
+      function calculateDistance(origin, destination) {
+        // Replace with your distance calculation logic
+        // Example logic: Assuming fixed distance of 100 km
+        const distance = 100;
+        return distance;
+      }
+    });
+  </script>
+</body>
+</html>
