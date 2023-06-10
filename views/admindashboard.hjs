@@ -309,4 +309,107 @@
       
 
     </ul>
-  </aside><!-- End Sidebar-->
+    </aside><!-- End Sidebar-->
+
+  
+ <main id="main" class="main">
+
+ 
+
+    <p>charts showing the stations tickets </p>
+
+    <section class="section">
+      <div class="row">
+
+        
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Area Chart</h5>
+
+              <!-- Area Chart -->
+              <div id="areaChart" style="min-height: 400px;" class="echart"></div>
+
+              <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                  echarts.init(document.querySelector("#areaChart")).setOption({
+                    xAxis: {
+                      type: 'category',
+                      boundaryGap: false,
+                      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                    },
+                    yAxis: {
+                      type: 'value'
+                    },
+                    series: [{
+                      data: [820, 932, 901, 934, 1290, 1330, 1320],
+                      type: 'line',
+                      smooth: true,
+                      areaStyle: {}
+                    }]
+                  });
+                });
+              </script>
+              <!-- End Area Chart -->
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Bar Chart</h5>
+
+              <!-- Bar Chart -->
+              <div id="barChart" style="min-height: 400px;" class="echart"></div>
+
+              <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                  echarts.init(document.querySelector("#barChart")).setOption({
+                    xAxis: {
+                      type: 'category',
+                      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                    },
+                    yAxis: {
+                      type: 'value'
+                    },
+                    series: [{
+                      data: [120, 200, 150, 80, 70, 110, 130],
+                      type: 'bar'
+                    }]
+                  });
+                });
+              </script>
+
+            </div>
+          </div>
+        </div>
+
+        
+                <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="assets/vendor/echarts/echarts.min.js"></script>
+  <script src="assets/vendor/quill/quill.min.js"></script>
+  <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+
+  <!-- Template Main JS File -->
+  <script src="assets/js/main.js"></script>
+              
+              <!-- End Bubble Chart -->
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+
+    
+ </body>
+</html>

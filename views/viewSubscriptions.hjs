@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>View Subscriptions</title>
+  <!-- Add Bootstrap CSS to style the table -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+
+<body>
+  <h1>Your Subscriptions</h1>
+  <div class="table-responsive">
+    <table class="table table-striped" id="subscriptionsTable">
+      <thead>
+        <tr>
+          <th>Subscription ID</th>
+          <th>Subscription Type</th>
+          <th>Zone ID</th>
+          <th>User ID</th>
+          <th>Number of Tickets</th>
+        </tr>
+      </thead>
+      <tbody id="subscriptions"></tbody>
+    </table>
+  </div>
+
+  <script>
+    // Get the token from where it's stored. This will depend on your setup
+    var token = localStorage.getItem('token');
+
+    // Use the Fetch API to get the data from the endpoint
+    fetch('/subscriptionss', {
+      headers: {
+        'Authorization': `Bearer ${token}` // assuming you use Bearer token for authentication
+      }
+    })
+      .then(response => response.json())
+      .then(subscriptions => {
+        // Get the table body to insert the subscriptions into
+        var subscriptionsBody = document.getElementById('subscriptions');
+
+        // For each subscription, create a table row and add it to the table body
+        subscriptions.forEach(subscription => {
+          var row = document.createElement('tr');
+
+          // Create a cell for each field and add it to the row
+          var idCell = document.createElement('td');
+          idCell.textContent = subscription.id;
+          row.appendChild(idCell);
+
+          var subtypeCell = document.createElement('td');
+          subtypeCell.textContent = subscription.subtype;
+          row.appendChild(subtypeCell);
+
+          var zoneidCell = document.createElement('td');
+          zoneidCell.textContent = subscription.zoneid;
+          row.appendChild(zoneidCell);
+
+          var useridCell = document.createElement('td');
+          useridCell.textContent = subscription.userid;
+          row.appendChild(useridCell);
+
+          var noofticketsCell = document.createElement('td');
+          noofticketsCell.textContent = subscription.nooftickets;
+          row.appendChild(noofticketsCell);
+
+          subscriptionsBody.appendChild(row);
+        });
+      })
+      .catch(error => console.error('Error:', error));
+  </script>
+</body>
+
+</html>

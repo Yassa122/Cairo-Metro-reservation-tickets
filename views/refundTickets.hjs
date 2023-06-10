@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Refund Tickets</title>
+  <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+  <link rel="stylesheet" href="/styles/style.css" />
+  <style>
+    body {
+      background-color: #f2f2f2;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-top: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      background-color: #ffffff;
+      border: 1px solid #e9ecef;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin: 0 auto;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: #0069d9;
+      border-color: #0069d9;
+    }
+  </style>
+  <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+</head>
+<body>
+  <h1>Refund Tickets</h1>
+  <div class="container">
+    <form id="refundForm">
+      <div class="form-group">
+        <label class="form-label" for="ticketId">Ticket ID:</label>
+        <input class="form-control" type="text" id="ticketId" name="ticketId" required />
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Refund</button>
+    </form>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      $('#refundForm').submit(function(event) {
+        event.preventDefault();
+        const ticketId = $('#ticketId').val();
+
+        const data = {
+          ticketId
+        };
+
+        $.ajax({
+          type: 'POST',
+          url: '/api/v1/refund/' + ticketId,
+          data,
+          success: function(serverResponse) {
+            if (serverResponse) {
+              alert('Refund request submitted successfully');
+              location.href = '/dashboard';
+            }
+          },
+          error: function(errorResponse) {
+            if (errorResponse) {
+              alert(`Error: ${errorResponse.responseText}`);
+            }
+          },
+        });
+      });
+    });
+  </script>
+</body>
+</html>
