@@ -9,10 +9,10 @@ const getUser = async function(req) {
   }
 
   const user = await db.select('*')
-    .from('se_project.sessions')
+    .from(process.env.DB_NAME + '.sessions')
     .where('token', sessionToken)
-    .innerJoin('se_project.users', 'se_project.sessions.userid', 'se_project.users.id')
-    .innerJoin('se_project.roles', 'se_project.users.roleid', 'se_project.roles.id')
+    .innerJoin(process.env.DB_NAME + '.users', process.env.DB_NAME + '.sessions.userid', process.env.DB_NAME + '.users.id')
+    .innerJoin(process.env.DB_NAME + '.roles', process.env.DB_NAME + '.users.roleid', process.env.DB_NAME + '.roles.id')
     .first();
   
   console.log('user =>', user)
@@ -39,14 +39,14 @@ module.exports = function(app) {
 
   // Register HTTP endpoint to render /users page
   app.get('/users', async function(req, res) {
-    const users = await db.select('*').from('se_project.users');
+    const users = await db.select('*').from(process.env.DB_NAME + '.users');
     return res.render('users', { users });
   });
 
   // Register HTTP endpoint to render /courses page
   app.get('/stations_example', async function(req, res) {
     const user = await getUser(req);
-    const stations = await db.select('*').from('se_project.stations');
+    const stations = await db.select('*').from(process.env.DB_NAME + '.stations');
     return res.render('stations_example', { ...user, stations });
   });
   app.get('/resetPassword', async function(req, res) {
@@ -125,7 +125,7 @@ app.get('/price', async function(req, res) {
 });
 
 app.get('/requestRefund', async function(req, res) {
-  const tickets = await db.select('*').from('se_project.tickets');
+  const tickets = await db.select('*').from(process.env.DB_NAME + '.tickets');
   return res.render('requestRefund', { tickets });
 });
 app.get('/requestSenior', async function(req, res) {
