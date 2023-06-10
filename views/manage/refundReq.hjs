@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel='stylesheet' href='/styles/bootstrap.min.css' />
+  <link rel='stylesheet' href='/styles/style.css' />
+  <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+</head>
+<body>
+  <div>
+    <nav class="navbar navbar-inverse" style="padding-left:130px;">
+      <ul class="nav navbar-nav">
+        <li><a href="/">Home</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="center">
+    <h1>Manage Refund Requests</h1>
+  </div>
+
+  <div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Status</th>
+          <th>User ID</th>
+          <th>Refund Amount</th>
+          <th>Ticket ID</th>
+          <th>Action</th> <!-- New column for accepting/rejecting requests -->
+        </tr>
+      </thead>
+      <tbody id="refundRequestsTableBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      // Function to render refund requests in the table
+      function renderRefundRequests(requests) {
+        var tableBody = $("#refundRequestsTableBody");
+        tableBody.empty();
+
+        requests.forEach(function(request) {
+          var row = $("<tr></tr>");
+
+          row.append($("<td></td>").text(request.id));
+          row.append($("<td></td>").text(request.status));
+          row.append($("<td></td>").text(request.userid));
+          row.append($("<td></td>").text(request.refundamount));
+          row.append($("<td></td>").text(request.ticketid));
+          
+          var actionCell = $("<td></td>");
+
+          // Create buttons for accepting and rejecting the request
+          var acceptButton = $("<button class='btn btn-success'>Accept</button>");
+          var rejectButton = $("<button class='btn btn-danger'>Reject</button>");
+
+          // Attach click event handlers to the buttons
+          acceptButton.click(function() {
+            acceptRejectRequest(request.id, "accepted");
+          });
+
+          rejectButton.click(function() {
+            acceptRejectRequest(request.id, "rejected");
+          });
+
+          // Append the buttons to the action cell
+          actionCell.append(acceptButton);
+          actionCell.append(rejectButton);
+
+          row.append(actionCell);
+
+          tableBody.append(row);
+        });
+      }
+
+      // Function to accept or reject a request
+      function acceptRejectRequest(requestId, requestStatus) {
+        // AJAX request to update the refund request
+        $.ajax({
+          type: "PUT",
+          url: `/api/v1/requests/refund/${requestId}`,
+          data: JSON.stringify({ refundStatus: requestStatus }),
+          contentType: "application/json",
+          success: function(response) {
+            alert(response.message);
+            // Reload the refund requests after updating
+            loadRefundRequests();
+          },
+          error: function(errorResponse) {
+            if (errorResponse) {
+              alert(`Error updating refund request: ${errorResponse.responseText}`);
+            }
+          }
+        });
+      }
+
+      // Function to load refund requests
+      function loadRefundRequests() {
+        // AJAX request to get refund requests
+        $.ajax({
+          type: "GET",
+          url: '/manage/requests/refunds',
+          success: function(requests) {
+            renderRefundRequests(requests);
+          },
+          error: function(errorResponse) {
+            if (errorResponse) {
+              alert(`Error retrieving refund requests: ${errorResponse.responseText}`);
+            }
+          }
+        });
+      }
+
+      // Load refund requests on page load
+      loadRefundRequests();
+    });
+  </script>
+</body>
+</html>

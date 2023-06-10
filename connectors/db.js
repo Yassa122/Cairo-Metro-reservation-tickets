@@ -10,11 +10,11 @@ const config = {
     host: 'localhost',
     port: 5432,
     user: 'postgres',
-    password: '1234',
-    database: 'postgres',
-  }
+    password: 'Mankit123@',
+    database: 'se_project',
+  },
 };
-
+//qw
 // create the connection with postgres
 const db = knex(config);
 

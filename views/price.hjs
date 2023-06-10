@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/styles/bootstrap.min.css" />
+  <script src="/js/jquery-2.2.0.min.js"></script>
+  <script src="/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Check Ticket Price</h1>
+    <div class="form-group">
+      <label for="originStation">Origin Station</label>
+      <select class="form-control" id="originStation">
+        <option value="">Select Origin Station</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="destinationStation">Destination Station</label>
+      <select class="form-control" id="destinationStation">
+        <option value="">Select Destination Station</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" id="checkPriceBtn">Check Price</button>
+    <div id="priceResult"></div>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      // Fetch stations data and populate dropdown menus
+      $.ajax({
+        type: "GET",
+        url: "/manage/stations",
+        success: function(stations) {
+          var originSelect = $("#originStation");
+          var destinationSelect = $("#destinationStation");
+
+          // Populate origin and destination dropdown menus
+          stations.forEach(function(station) {
+            originSelect.append($("<option></option>").val(station.id).text(station.stationname));
+            destinationSelect.append($("<option></option>").val(station.id).text(station.stationname));
+          });
+        },
+        error: function(errorResponse) {
+          if (errorResponse) {
+            alert(`Error retrieving stations: ${errorResponse.responseText}`);
+          }
+        }
+      });
+
+      // Handle Check Price button click event
+      $("#checkPriceBtn").click(function() {
+        var originId = $("#originStation").val();
+        var destinationId = $("#destinationStation").val();
+
+        if (!originId || !destinationId) {
+          alert("Please select both origin and destination stations.");
+          return;
+        }
+
+        // Make AJAX request to check ticket price
+        $.ajax({
+          type: "GET",
+          url: `/api/v1/tickets/price/${originId}/${destinationId}`,
+          success: function(response) {
+            $("#priceResult").html(`Ticket Price: $${response.price}`);
+          },
+          error: function(errorResponse) {
+            if (errorResponse) {
+              alert(`Error checking ticket price: ${errorResponse.responseText}`);
+            }
+          }
+        }); 
+      });
+    });
+  </script>
+</body>
+</html>
