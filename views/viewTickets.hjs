@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel='stylesheet' href='/styles/bootstrap.min.css' />
+  <link rel='stylesheet' href='/styles/style.css' />
+  <script src="/js/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="/js/bootstrap.min.js" type="text/javascript"></script>
+</head>
+<body>
+  <div>
+    <nav class="navbar navbar-inverse" style="padding-left:130px;">
+      <ul class="nav navbar-nav">
+        <li><a href="/">Home</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="center">
+    <h1>Manage Tickets</h1>
+  </div>
+
+  <div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Origin</th>
+          <th>Destination</th>
+          <th>User ID</th>
+          <th>Sub ID</th>
+          <th>Trip Date</th>
+        </tr>
+      </thead>
+      <tbody id="ticketsTableBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      // Function to render tickets in the table
+      function renderTickets(tickets) {
+        var tableBody = $("#ticketsTableBody");
+        tableBody.empty();
+
+        tickets.forEach(function(ticket) {
+          var row = $("<tr></tr>");
+
+          row.append($("<td></td>").text(ticket.id));
+          row.append($("<td></td>").text(ticket.origin));
+          row.append($("<td></td>").text(ticket.destination));
+          row.append($("<td></td>").text(ticket.userid));
+          row.append($("<td></td>").text(ticket.subid));
+          row.append($("<td></td>").text(ticket.tripdate));
+
+          tableBody.append(row);
+        });
+      }
+
+      // Function to load tickets
+      function loadTickets() {
+        // AJAX request to get tickets
+        $.ajax({
+          type: "GET",
+          url: '/tickets',
+          success: function(tickets) {
+            renderTickets(tickets);
+          },
+          error: function(errorResponse) {
+            if (errorResponse) {
+              alert(`Error retrieving tickets: ${errorResponse.responseText}`);
+            }
+          }
+        });
+      }
+
+      // Load tickets on page load
+      loadTickets();
+    });
+  </script>
+</body>
+</html>

@@ -164,66 +164,83 @@
 
 
 document.getElementById('viewSubscriptions').addEventListener('click', function() {
-      // TODO: replace `userId` with the actual id of the user
-      document.getElementById("zonesData").style.display = 'none';
-  
-  const userId = "z"; // Place user id here
+  document.getElementById("subscriptions").style.display = 'none';
 
-  fetch(`/subscriptionss?userId=${userId}`)
-    .then(response => response.json())
-    .then(subscriptions => {
-      // Display the subscriptions in some way
-      const subscriptionDiv = document.getElementById("subscriptions");
-      subscriptionDiv.style.display = 'block'; // Display the subscriptions div
-      subscriptionDiv.innerHTML = ''; // Clear old subscriptions
+  // Get userId from cookies
+  const cookies = decodeURIComponent(document.cookie).split(';');
+  let userId = '';
+  for(let i = 0; i < cookies.length; i++) {
+    let c = cookies[i];
+    while (c.charAt(0) === ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf('userId=') === 0) {
+      userId = c.substring('userId='.length, c.length);
+      break;
+    }
+  }
 
-          // Create table
-          const table = document.createElement('table');
-          table.classList.add('table');
+  // Proceed only if userId is not empty
+  if (userId !== '') {
+    fetch(`/subscriptionss?userId=${userId}`)
+      .then(response => response.json())
+      .then(subscriptions => {
+        // Display the subscriptions in some way
+        const subscriptionDiv = document.getElementById("subscriptions");
+        subscriptionDiv.style.display = 'block'; // Display the subscriptions div
+        subscriptionDiv.innerHTML = ''; // Clear old subscriptions
 
-          // Create table header
-          const thead = document.createElement('thead');
-          const headerRow = document.createElement('tr');
-          ['Subscription Type', 'Amount', 'Date', 'Status'].forEach(headerText => {
-            const th = document.createElement('th');
-            th.textContent = headerText;
-            headerRow.appendChild(th);
-          });
-          thead.appendChild(headerRow);
-          table.appendChild(thead);
+        // Create table
+        const table = document.createElement('table');
+        table.classList.add('table');
 
-          // Create table body
-          const tbody = document.createElement('tbody');
-
-          subscriptions.forEach(subscription => {
-            const row = document.createElement('tr');
-
-            const typeCell = document.createElement('td');
-            typeCell.textContent = subscription.subscriptionType;
-            row.appendChild(typeCell);
-
-            const amountCell = document.createElement('td');
-            amountCell.textContent = subscription.amount;
-            row.appendChild(amountCell);
-
-            const dateCell = document.createElement('td');
-            dateCell.textContent = subscription.date;
-            row.appendChild(dateCell);
-
-            const statusCell = document.createElement('td');
-            statusCell.textContent = subscription.status;
-            row.appendChild(statusCell);
-
-            tbody.appendChild(row);
-          });
-
-          table.appendChild(tbody);
-          subscriptionDiv.appendChild(table);
-        })
-        .catch(error => {
-          console.error('Error:', error);
+        // Create table header
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        ['Subscription Type', 'Amount', 'Date', 'Status'].forEach(headerText => {
+          const th = document.createElement('th');
+          th.textContent = headerText;
+          headerRow.appendChild(th);
         });
-    });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Create table body
+        const tbody = document.createElement('tbody');
+
+        subscriptions.forEach(subscription => {
+          const row = document.createElement('tr');
+
+          const typeCell = document.createElement('td');
+          typeCell.textContent = subscription.subscriptionType;
+          row.appendChild(typeCell);
+
+          const amountCell = document.createElement('td');
+          amountCell.textContent = subscription.amount;
+          row.appendChild(amountCell);
+
+          const dateCell = document.createElement('td');
+          dateCell.textContent = subscription.date;
+          row.appendChild(dateCell);
+
+          const statusCell = document.createElement('td');
+          statusCell.textContent = subscription.status;
+          row.appendChild(statusCell);
+
+          tbody.appendChild(row);
+        });
+
+        table.appendChild(tbody);
+        subscriptionDiv.appendChild(table);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  } else {
+    console.log('User not logged in.');
+  }
+});
+
 
 document.getElementById('getZonesData').addEventListener('click', function() {
   document.getElementById("subscriptions").style.display = 'none';

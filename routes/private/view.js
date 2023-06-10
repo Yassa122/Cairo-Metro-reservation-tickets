@@ -165,5 +165,29 @@ app.get('/manageZones', async function(req, res) {
   return res.render('manageZones', user);
 });
 
+app.get('/refundTickets', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('refundTickets', user);
+});
+
+app.get('/viewTickets', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('viewTickets', user);
+});
+
+app.get('/simulateRide', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('simulateRide', user);
+});
+
+app.get('/viewSubscriptions', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('viewSubscriptions', user);
+});
+
+app.get('/purchaseTicketSubscription', async function(req, res) {
+  const user = await getUser(req);
+  return res.render('purchaseTicketSubscription', user);
+});
 
 };

@@ -17,35 +17,27 @@
 <body class="form-v3">
 	<div class="page-content">
 		<div class="form-v3-content">
-			<form class="form-detail" action="/api/v1/payment/ticket" method="POST" id="myform">
-				<h2>Booking Tickets</h2>
-				<p class="text">pay for online ticket form.</p>
+			<form class="form-detail" action="/api/v1/tickets/purchase/subscription" method="POST" id="myform">
+				<h2>Purchase Ticket With Subscription</h2>
+				<p class="text">Subscription based ticket purchase form.</p>
 				<div class="form-group">
 					<div class="form-row form-row-1">
-						<label for="creditCardNumber">Credit Card Number:</label>
-						<input type="text" name="creditCardNumber" id="creditCardNumber" class="input-text" required>
-					</div>
-					<div class="form-row form-row-1">
-						<label for="holderName">Holder Name:</label>
-						<input type="text" name="holderName" id="holderName" class="input-text" required>
+						<label for="subId">Subscription ID:</label>
+						<input type="text" name="subId" id="subId" class="input-text" required>
 					</div>
 				</div>
 				<div class="form-group form-group-1">
 					<div class="form-row form-row-2">
-    <label for="origin">Origin:</label>
-    <input type="text" id="origin" class="input-text" name="origin" required>
-</div>
-<div class="form-row form-row-2">
-    <label for="destination">Destination:</label>
-    <input type="text" id="destination" class="input-text" name="destination" required>
-</div>
+						<label for="origin">Origin:</label>
+						<input type="text" id="origin" class="input-text" name="origin" required>
+					</div>
+					<div class="form-row form-row-2">
+						<label for="destination">Destination:</label>
+						<input type="text" id="destination" class="input-text" name="destination" required>
+					</div>
 					<div class="form-row form-row-2">
 						<label for="tripDate">Trip Date:</label>
 						<input type="text" name="tripDate" class="date" id="tripDate" placeholder="8/9/2018">
-					</div>
-					<div class="form-row form-row-2">
-						<label for="payedAmount">Paid Amount:</label>
-						<input type="number" id="payedAmount" class="input-text" name="payedAmount" title="Amount" required>
 					</div>
 				</div>
 				<div class="form-row-last">
@@ -53,21 +45,7 @@
 				</div>
 			
 			</form>
-			<div class="form-right">
-				<div class="form-images-1">
-					<img src="assets/images/form-v3-1.jpg" alt="form-v3-1">
-				</div>
-				<div class="form-images-2">
-					<img src="assets/images/form-v3-2.jpg" alt="form-v3-2">
-				</div>
-				<div class="form-icon-1">
-					<a href="#"><i class="zmdi zmdi-chevron-left"></i></a>
-				</div>
-				<div class="form-icon-2">
-					<a href="#"><i class="zmdi zmdi-chevron-right"></i></a>
-				</div>
-
-			</div>
+			<!--... Rest of your HTML code ...-->
 		</div>
 	</div>
 	<!-- Jquery -->
@@ -84,9 +62,7 @@
 	document.getElementById('myform').addEventListener('submit', function(e) {
 		e.preventDefault();
 
-		const creditCardNumber = document.getElementById('creditCardNumber').value;
-		const holderName = document.getElementById('holderName').value;
-		const payedAmount = document.getElementById('payedAmount').value;
+		const subId = document.getElementById('subId').value;
 		const origin = document.getElementById('origin').value;
 		const destination = document.getElementById('destination').value;
 		let tripDate = document.getElementById('tripDate').value;
@@ -94,9 +70,9 @@
 		// Convert trip date to a timestamp
 		tripDate = new Date(tripDate).toISOString();
 
-		const data = { creditCardNumber, holderName, payedAmount, origin, destination, tripDate };
+		const data = { subId, origin, destination, tripDate };
 
-		fetch('/api/v1/payment/ticket', {
+		fetch('/api/v1/tickets/purchase/subscription', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -107,15 +83,15 @@
 		.then(response => response.json())
 		.then(data => {
 			console.log(data);
-			if (data.message === 'Payment successful') {
-				alert('Payment successful!');
+			if (data.message === 'Ticket successfully purchased with subscription') {
+				alert('Ticket successfully purchased with subscription!');
 			} else {
-				alert('Payment failed!');
+				alert('Ticket purchase failed!');
 			}
 		})
 		.catch((error) => {
 			console.error('Error:', error);
-			alert('Payment failed due to an error!');
+			alert('Ticket purchase failed due to an error!');
 		});
 	});
 </script>

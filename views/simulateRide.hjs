@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <title>Ride Simulation</title>
+  <style>
+    #train {
+      position: relative;
+      cursor: pointer;
+    }
+  </style>
+  <script>
+    const submitForm = async (event) => {
+      event.preventDefault();
+
+      const origin = document.getElementById('origin').value;
+      const destination = document.getElementById('destination').value;
+      const tripDate = document.getElementById('tripDate').value;
+
+      const url = '/api/v1/ride/simulate';
+      const data = { origin, destination, tripDate };
+
+      try {
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.text();
+        alert(result);
+      } catch (error) {
+        console.error('Error:', error);
+        alert(error);
+      }
+    }
+
+    const moveTrain = () => {
+      let start = Date.now();
+
+      let timer = setInterval(function() {
+        let timePassed = Date.now() - start;
+
+        train.style.left = timePassed / 5 + 'px';
+
+        if (timePassed > 2000) clearInterval(timer);
+      }, 20);
+    }
+
+    const simulateRide = (event) => {
+      submitForm(event);
+      moveTrain();
+    }
+  </script>
+</head>
+<body>
+  <div class="container py-4">
+    <h1>Simulate a Ride</h1>
+    <form onsubmit="simulateRide(event)">
+      <div class="form-group">
+        <label for="origin">Origin:</label>
+        <input type="text" id="origin" name="origin" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="destination">Destination:</label>
+        <input type="text" id="destination" name="destination" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="tripDate">Trip Date:</label>
+        <input type="datetime-local" id="tripDate" name="tripDate" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-primary">Simulate Ride</button>
+    </form>
+    <div class="mt-5">
+      <img id="train" src="https://js.cx/clipart/train.gif">
+    </div>
+  </div>
+</body>
+</html>
