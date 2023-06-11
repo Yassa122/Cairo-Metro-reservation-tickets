@@ -7,11 +7,11 @@ const knex = require('knex');
 const config = {
   client: 'pg',
   connection: {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+    host: "dpg-ci1u7cm7avj2t31rc5p0-a.oregon-postgres.render.com",
+    port: "5432",
+    user: "se_project_06lv_user",
+    password: "5c8jBV5EpJRoFrlRYH1hZvUAf6bli813",
+    database: "se_project_06lv",
     ssl: true
   },
 };
