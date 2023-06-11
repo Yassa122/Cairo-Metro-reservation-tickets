@@ -4,6 +4,6 @@
         "DB_USER": "se_project_06lv_user",
         "DB_PASSWORD": "5c8jBV5EpJRoFrlRYH1hZvUAf6bli813",
         "DB_PORT": "5432",
-        "DB_HOST": "dpg-ci1u7cm7avj2t31rc5p0-a"
+        "DB_HOST": "dpg-ci1u7cm7avj2t31rc5p0-a.oregon-postgres.render.com"
     }
 }
