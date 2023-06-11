@@ -17,17 +17,17 @@ const getUser = async function (req) {
   console.log("hi", sessionToken);
   const user = await db
     .select("*")
-    .from(process.env.DB_NAME + ".sessions")
+    .from("se_project.sessions")
     .where("token", sessionToken)
     .innerJoin(
-      process.env.DB_NAME + ".users",
-      process.env.DB_NAME + ".sessions.userid",
-      process.env.DB_NAME + ".users.id"
+      "se_project.users",
+      "se_project.sessions.userid",
+      "se_project.users.id"
     )
     .innerJoin(
-      process.env.DB_NAME + ".roles",
-      process.env.DB_NAME + ".users.roleid",
-      process.env.DB_NAME + ".roles.id"
+      "se_project.roles",
+      "se_project.users.roleid",
+      "se_project.roles.id"
     )
     .first();
 
@@ -49,7 +49,7 @@ module.exports = function (app) {
       const {
         newpassword
       } = req.body;
-      await db(process.env.DB_NAME + ".users")
+      await db("se_project.users")
         .where("id", user.userid)
         .update({
           password: newpassword
@@ -63,7 +63,7 @@ module.exports = function (app) {
 
   app.get("/api/v1/zones", async function (req, res) {
     try {
-      const zones = await db.select('*').from(process.env.DB_NAME + ".zones");
+      const zones = await db.select('*').from("se_project.zones");
       return res.status(200).json(zones);
     } catch (e) {
       console.log(e.message);
@@ -79,7 +79,7 @@ module.exports = function (app) {
         return res.status(401).send("Unauthorized");
       }
 
-      const subscriptions = await db(process.env.DB_NAME + '.subscription').where('userid', user.userid);
+      const subscriptions = await db('se_project.subscription').where('userid', user.userid);
 
       if (subscriptions.length === 0) {
         return res.status(404).send("No subscriptions found for this user");
@@ -130,7 +130,7 @@ module.exports = function (app) {
           return res.status(400).send("Invalid subscription type");
       }
 
-      const subscriptionId = await db(process.env.DB_NAME + ".subscription")
+      const subscriptionId = await db("se_project.subscription")
         .insert({
           subtype: subType,
           zoneid: zoneId,
@@ -139,7 +139,7 @@ module.exports = function (app) {
         })
         .returning('id');
 
-      await db(process.env.DB_NAME + ".transactions")
+      await db("se_project.transactions")
         .insert({
           // id: paymentId,
           amount: payedAmount,
@@ -180,7 +180,7 @@ module.exports = function (app) {
 
       const paymentId = v4();
 
-      const ticketId = await db(process.env.DB_NAME + ".tickets")
+      const ticketId = await db("se_project.tickets")
         .insert({
           origin: origin,
           destination: destination,
@@ -189,7 +189,7 @@ module.exports = function (app) {
         })
         .returning('id');
 
-      await db(process.env.DB_NAME + ".transactions")
+      await db("se_project.transactions")
         .insert({
           amount: payedAmount,
           userid: user.userid,
@@ -226,7 +226,7 @@ module.exports = function (app) {
         return res.status(400).send("Missing required fields");
       }
 
-      const subscription = await db(process.env.DB_NAME + '.subscription')
+      const subscription = await db('se_project.subscription')
         .where({
           id: subId,
           userid: user.userid,
@@ -238,7 +238,7 @@ module.exports = function (app) {
         return res.status(400).send("Invalid subscription or no tickets left in the subscription.");
       }
 
-      await db(process.env.DB_NAME + '.subscription')
+      await db('se_project.subscription')
         .where({
           id: subId,
           userid: user.userid,
@@ -247,7 +247,7 @@ module.exports = function (app) {
           nooftickets: db.raw('nooftickets - 1')
         });
 
-      const ticketId = await db(process.env.DB_NAME + ".tickets")
+      const ticketId = await db("se_project.tickets")
         .insert({
           origin: origin,
           destination: destination,
@@ -258,7 +258,7 @@ module.exports = function (app) {
         .returning('id');
 
       // Insert into rides table
-      const rideId = await db(process.env.DB_NAME + ".rides")
+      const rideId = await db("se_project.rides")
         .insert({
           status: "upcoming",
           origin: origin,
@@ -292,7 +292,7 @@ module.exports = function (app) {
 
       const ticket = await db
         .select("*")
-        .from(process.env.DB_NAME + ".tickets")
+        .from("se_project.tickets")
         .where("id", ticketId)
         .first();
 
@@ -310,20 +310,20 @@ module.exports = function (app) {
         return res.status(400).send("Cannot refund past dated tickets");
       }
 
-      await db.from(process.env.DB_NAME + ".rides").where("ticketid", ticketId).andWhere("tripdate", ">", now).del();
+      await db.from("se_project.rides").where("ticketid", ticketId).andWhere("tripdate", ">", now).del();
 
-      const subscription = await db.select("*").from(process.env.DB_NAME + ".subscription").where("id", ticket.subid).first();
+      const subscription = await db.select("*").from("se_project.subscription").where("id", ticket.subid).first();
 
       let refundAmount;
 
       if (subscription) {
         refundAmount = 0;
       } else {
-        const transaction = await db.select("amount").from(process.env.DB_NAME + ".transactions").where("purchasediid", `Ticket ID: ${ticketId}`).first();
+        const transaction = await db.select("amount").from("se_project.transactions").where("purchasediid", `Ticket ID: ${ticketId}`).first();
         refundAmount = transaction ? transaction.amount : 0;
       }
 
-      await db(process.env.DB_NAME + ".refund_requests")
+      await db("se_project.refund_requests")
         .insert({
           status: 'pending',
           userid: user.userid,
@@ -350,7 +350,7 @@ module.exports = function (app) {
       } = req.body;
       const status = "completed";
 
-      const rideExists = await db(process.env.DB_NAME + ".rides")
+      const rideExists = await db("se_project.rides")
         .where({
           "origin": origin,
           "destination": destination,
@@ -363,7 +363,7 @@ module.exports = function (app) {
         return res.status(404).send("The ride does not exist or is not upcoming.");
       }
 
-      const rideUpdate = await db(process.env.DB_NAME + ".rides")
+      const rideUpdate = await db("se_project.rides")
         .where({
           "origin": origin,
           "destination": destination,
@@ -393,7 +393,7 @@ module.exports = function (app) {
           userid: user.userid,
           nationalid: nationalId
         })
-        .into(process.env.DB_NAME + ".senior_requests")
+        .into("se_project.senior_requests")
         .returning("*")
         .then((rows) => rows[0]);
 
@@ -428,7 +428,7 @@ module.exports = function (app) {
       }
 
       // Check if the request exists
-      const refundRequest = await db(process.env.DB_NAME + '.refund_requests')
+      const refundRequest = await db('se_project.refund_requests')
         .where({
           id: requestId,
         })
@@ -445,7 +445,7 @@ module.exports = function (app) {
       }
 
       // Update the request status
-      await db(process.env.DB_NAME + '.refund_requests')
+      await db('se_project.refund_requests')
         .where({
           id: requestId,
         })
@@ -490,7 +490,7 @@ module.exports = function (app) {
       }
 
 
-      const update = await db(process.env.DB_NAME + ".zones")
+      const update = await db("se_project.zones")
         .where({
           id: zoneId
         })
@@ -552,7 +552,7 @@ module.exports = function (app) {
       }
 
 
-      const station = await db(process.env.DB_NAME + ".stations").insert({
+      const station = await db("se_project.stations").insert({
         stationname: stationname,
         stationposition: "start",
         stationstatus: "new",
@@ -598,7 +598,7 @@ module.exports = function (app) {
           });
       }
 
-      const updatedStation = await db(process.env.DB_NAME + ".stations")
+      const updatedStation = await db("se_project.stations")
         .where({
           id: parsedStationId
         })
@@ -635,9 +635,9 @@ module.exports = function (app) {
       destinationId = parseInt(destinationId);
 
 
-      const stations = await db.select('*').from(process.env.DB_NAME + '.stations');
-      const routes = await db.select('*').from(process.env.DB_NAME + '.routes');
-      const stationRoutes = await db.select('*').from(process.env.DB_NAME + '.stationroutes');
+      const stations = await db.select('*').from('se_project.stations');
+      const routes = await db.select('*').from('se_project.routes');
+      const stationRoutes = await db.select('*').from('se_project.stationroutes');
 
       const graph = transformDataForBfs(stations, routes, stationRoutes);
 
@@ -649,9 +649,9 @@ module.exports = function (app) {
       }
 
       let price;
-      if (path.length <= 9) {
+      if (path.length <= 5) {
         price = 5;
-      } else if (path.length <= 16) {
+      } else if (path.length <= 6) {
         price = 7;
       } else {
         price = 10;
@@ -730,53 +730,71 @@ module.exports = function (app) {
 
   app.delete("/api/v1/station/:stationId", async function (req, res) {
     try {
-      const {
-        stationId
-      } = req.params;
-      const user = await getUser(req);
-
-      if (!user.isAdmin) {
-        return res.status(401).send("Unauthorized");
+      const { stationId } = req.params;
+      const parsedStationId = parseInt(stationId, 10);
+  
+      if (isNaN(parsedStationId)) {
+        return res.status(400).send("Invalid stationId");
       }
-
+  
       const station = await db
         .select("*")
-        .from(process.env.DB_NAME + ".stations")
-        .where("id", stationId)
+        .from("se_project.stations")
+        .where("id", parsedStationId)
         .first();
-
+  
       if (!station) {
         return res.status(404).send("Station not found");
       }
-
-      const {
-        stationtype
-      } = station;
-
-      if (stationtype === "normal") {
-        await db(process.env.DB_NAME + ".stationroutes")
-          .where("stationid", stationId)
-          .delete();
-
-        await db(process.env.DB_NAME + ".stations")
-          .where("id", stationId)
-          .delete();
-
-        return res.status(200).send("Station deleted successfully");
-      } else {
-        return res.status(400).send("Invalid station type");
+  
+      const routes = await db
+        .select("*")
+        .from("se_project.routes")
+        .where("fromstationid", parsedStationId)
+        .orWhere("tostationid", parsedStationId);
+        
+      for(let route of routes) {
+        let newFromStationId = route.fromstationid;
+        let newToStationId = route.tostationid;
+        
+        if(route.fromstationid === parsedStationId || route.tostationid === parsedStationId) {
+          const stationRoutes = await db
+            .select("*")
+            .from("se_project.stationroutes")
+            .where("routeid", route.id)
+            .orderBy('id');  
+            
+          for(let i = 0; i < stationRoutes.length; i++) {
+            if(stationRoutes[i].stationid === parsedStationId) {
+              if(i < stationRoutes.length - 1) {  // there is a next station
+                if(route.fromstationid === parsedStationId) {
+                  newFromStationId = stationRoutes[i+1].stationid;
+                } else {  // route.tostationid === parsedStationId
+                  newToStationId = stationRoutes[i+1].stationid;
+                }
+              }
+              break;
+            }
+          }
+        }
+  
+        await db("se_project.routes")
+          .where("id", route.id)
+          .update({
+            fromstationid: newFromStationId,
+            tostationid: newToStationId
+          });
       }
+  
+      await db("se_project.stations").where("id", parsedStationId).delete();
+  
+      return res.status(200).send("Station deleted successfully");
     } catch (e) {
       console.log(e.message);
-      return res.status(400).send("Could not delete the station");
-    }
+      return res.status(500).send("Could not delete station");
+    }
   });
-
-
-
-
-
-
+  
   app.post("/api/v1/route", async function (req, res) {
     try {
       const user = await getUser(req);
@@ -802,10 +820,10 @@ module.exports = function (app) {
           });
       }
 
-      const toStation = await db(process.env.DB_NAME + '.stations').where({
+      const toStation = await db('se_project.stations').where({
         id: connectedStationId
       }).first();
-      const fromStation = await db(process.env.DB_NAME + '.stations').where({
+      const fromStation = await db('se_project.stations').where({
         id: newStationId
       }).first();
 
@@ -818,14 +836,14 @@ module.exports = function (app) {
       }
 
       // Create the route in the database
-      const [routeId] = await db(process.env.DB_NAME + ".routes").insert({
+      const [routeId] = await db("se_project.routes").insert({
         fromstationid: newStationId,
         tostationid: connectedStationId,
         routename: routename,
       }).returning('id');
 
       // Associate the stations to the route
-      await db(process.env.DB_NAME + '.stationroutes').insert([{
+      await db('se_project.stationroutes').insert([{
           stationid: newStationId,
           routeid: routeId
         },
@@ -870,7 +888,7 @@ module.exports = function (app) {
           .send("Invalid request. Missing required fields.");
       }
 
-      const updatedRoute = await db(process.env.DB_NAME + ".routes")
+      const updatedRoute = await db("se_project.routes")
         .where({
           id: routeid
         })
@@ -897,7 +915,7 @@ module.exports = function (app) {
       const user = await getUser(req);
       if (user.isAdmin) {
         const routeId = req.params.routeId;
-        const routeDelete = await db(process.env.DB_NAME + '.routes').where('id', routeId);
+        const routeDelete = await db('se_project.routes').where('id', routeId);
         console.log(routeDelete)
         if (routeDelete.length == 0) {
           return res.status(404).json({
@@ -916,23 +934,23 @@ module.exports = function (app) {
 
         console.log(tostationid);
         console.log(fromstationid);
-        const nextStation = await db(process.env.DB_NAME + '.routes').where('tostationid', fromstationid).first();
+        const nextStation = await db('se_project.routes').where('tostationid', fromstationid).first();
         if (nextStation) {
-          await db(process.env.DB_NAME + '.stations').where('id', nextStation.fromstationid).update({
+          await db('se_project.stations').where('id', nextStation.fromstationid).update({
             stationposition: 'start'
           });
 
         }
         console.log(nextStation);
-        const prevStation = await db(process.env.DB_NAME + '.routes').where('tostationid', tostationid).first();
+        const prevStation = await db('se_project.routes').where('tostationid', tostationid).first();
         if (prevStation) {
-          await db(process.env.DB_NAME + '.stations').where('id', prevStation.fromstationid).update({
+          await db('se_project.stations').where('id', prevStation.fromstationid).update({
             stationposition: 'start'
           });
         }
         console.log(prevStation);
         console.log('Route and connected stations deleted successfully');
-        await db(process.env.DB_NAME + '.routes').where('id', routeId).del();
+        await db('se_project.routes').where('id', routeId).del();
         return res.status(200).json({
           message: 'Route and connected stations deleted successfully'
         });
@@ -955,7 +973,7 @@ module.exports = function (app) {
   app.get("/users", async function (req, res) {
     try {
       const user = await getUser(req);
-      const users = await db.select("*").from(process.env.DB_NAME + ".users");
+      const users = await db.select("*").from("se_project.users");
 
       return res.status(200).json(users);
     } catch (e) {
@@ -966,7 +984,7 @@ module.exports = function (app) {
 
   app.get("/manage/stationss", async function (req, res) {
     try {
-      const stations = await db.select("*").from(process.env.DB_NAME + ".stations");
+      const stations = await db.select("*").from("se_project.stations");
 
       return res.status(200).json(stations);
     } catch (e) {
@@ -977,7 +995,7 @@ module.exports = function (app) {
 
   app.get("/manage/routess", async function (req, res) {
     try {
-      const routes = await db.select("*").from(process.env.DB_NAME + ".routes");
+      const routes = await db.select("*").from("se_project.routes");
 
       return res.status(200).json(routes);
     } catch (e) {
@@ -989,7 +1007,7 @@ module.exports = function (app) {
 
   app.get("/manage/requests/refunds", async function (req, res) {
     try {
-      const routes = await db.select("*").from(process.env.DB_NAME + ".refund_requests");
+      const routes = await db.select("*").from("se_project.refund_requests");
 
       return res.status(200).json(routes);
     } catch (e) {
@@ -1000,7 +1018,7 @@ module.exports = function (app) {
 
   app.get("/manage/requests/seniors", async function (req, res) {
     try {
-      const routes = await db.select("*").from(process.env.DB_NAME + ".senior_requests");
+      const routes = await db.from("se_project.senior_requests").where("status", "pending");
 
       return res.status(200).json(routes);
     } catch (e) {
@@ -1015,7 +1033,7 @@ module.exports = function (app) {
       const {
         newpassword
       } = req.body;
-      await db(process.env.DB_NAME + ".users")
+      await db("se_project.users")
         .where("id", user.userid)
         .update({
           password: newpassword
@@ -1029,7 +1047,7 @@ module.exports = function (app) {
 
   app.get("/api/v1/zones", async function (req, res) {
     try {
-      const zones = await db.select('*').from(process.env.DB_NAME + ".zones");
+      const zones = await db.select('*').from("se_project.zones");
       return res.status(200).json(zones);
     } catch (e) {
       console.log(e.message);
@@ -1044,7 +1062,7 @@ module.exports = function (app) {
 
   app.get("/manage/requests/refunds", async function (req, res) {
     try {
-      const routes = await db.select("*").from(process.env.DB_NAME + ".refund_requests");
+      const routes = await db.select("*").from("se_project.refund_requests");
 
       return res.status(200).json(routes);
     } catch (e) {
@@ -1055,7 +1073,7 @@ module.exports = function (app) {
 
   app.get("/manage/requests/seniors", async function (req, res) {
     try {
-      const routes = await db.select("*").from(process.env.DB_NAME + ".senior_requests");
+      const routes = await db.select("*").from("se_project.senior_requests").where("status", "pending");
 
       return res.status(200).json(routes);
     } catch (e) {
@@ -1090,12 +1108,25 @@ module.exports = function (app) {
         });
       }
 
-      await db(process.env.DB_NAME + ".senior_requests")
+      
+     const x= await db("se_project.senior_requests")
         .where("id", requestId)
         .update({
           status: seniorStatus
-        });
+        }).returning("*");
+        
+        
 
+
+    await db("se_project.users")
+        .where("id",x[0].userid)
+         .update({
+           roleid: 3
+         });
+
+
+         
+         
       return res.status(200).json({
         message: "Senior request updated successfully."
       });
@@ -1134,11 +1165,13 @@ module.exports = function (app) {
         });
       }
 
-      await db(process.env.DB_NAME + ".refund_requests")
+      await db("se_project.refund_requests")
         .where("id", requestId)
         .update({
           status: refundStatus
         });
+
+        
 
       return res.status(200).json({
         message: "Refund request updated successfully."
@@ -1153,9 +1186,21 @@ module.exports = function (app) {
   app.put("/api/v1/requests/refund/:requestId", acceptRejectRefund);
 
 
+  // app.get("/tickets", async function (req, res) {
+  //   try {
+  //     const tickets = await db.select("*").from("se_project.tickets");
+
+  //     return res.status(200).json(tickets);
+  //   } catch (e) {
+  //     console.log(e.message);
+  //     return res.status(400).send("Could not retrieve tickets");
+  //   }
+  // });
+
   app.get("/tickets", async function (req, res) {
     try {
-      const tickets = await db.select("*").from(process.env.DB_NAME + ".tickets");
+      const user = await getUser(req);
+      const tickets = await db.select("*").from("se_project.tickets").where("userid", user.userid);
 
       return res.status(200).json(tickets);
     } catch (e) {
@@ -1163,6 +1208,19 @@ module.exports = function (app) {
       return res.status(400).send("Could not retrieve tickets");
     }
   });
+
+  app.get("/ridess", async function (req, res) {
+    try {
+      const user = await getUser(req);
+      const rides = await db.select("*").from("se_project.rides").where("userid", user.userid);
+
+      return res.status(200).json(rides);
+    } catch (e) {
+      console.log(e.message);
+      return res.status(400).send("Could not retrieve rides");
+    }
+  });
+
 
 
 };

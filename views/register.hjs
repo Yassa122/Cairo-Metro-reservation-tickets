@@ -14,7 +14,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <link id="pagestyle" href="../assets/css/material-kit.css?v=3.0.4" rel="stylesheet" />
 
-
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 </head>
 
@@ -81,6 +81,10 @@
       
       $(document).ready(function() {
         // Handle Registration Button Click
+
+        {{!-- $("#signup-form").submit(function(event) {console.log("yassa")}) --}}
+
+        
         $("#signup-form").submit(function(event) {
           event.preventDefault(); // prevent the form from submitting
           const firstName = $('#firstName').val();
@@ -115,6 +119,10 @@
             }
           });
         });
+
+
+
+
       });
     </script>
   </body>
