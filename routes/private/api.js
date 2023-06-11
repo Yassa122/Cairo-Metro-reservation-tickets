@@ -144,7 +144,7 @@ module.exports = function (app) {
           // id: paymentId,
           amount: payedAmount,
           userid: user.userid,
-          purchasediid: subscriptionId[0] // Use the subscription id as the purchased id
+          purchasedid: subscriptionId[0] // Use the subscription id as the purchased id
         });
 
       return res.status(201).json({
@@ -193,7 +193,7 @@ module.exports = function (app) {
         .insert({
           amount: payedAmount,
           userid: user.userid,
-          purchasediid: ticketId[0]
+          purchasedid: ticketId[0]
         });
 
       return res.status(201).json({
@@ -319,7 +319,7 @@ module.exports = function (app) {
       if (subscription) {
         refundAmount = 0;
       } else {
-        const transaction = await db.select("amount").from("se_project_06lv.transactions").where("purchasediid", `Ticket ID: ${ticketId}`).first();
+        const transaction = await db.select("amount").from("se_project_06lv.transactions").where("", `Ticket ID: ${ticketId}`).first();
         refundAmount = transaction ? transaction.amount : 0;
       }
 
