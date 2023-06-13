@@ -49,7 +49,7 @@
         <div class="col-md-4">
           <div class="card pricing-card pricing-plan-basic">
             <div class="card-body">
-              <i class="mdi mdi-cube-outline pricing-plan-icon"></i>
+              <i class="mdi pricing-plan-icon"></i>
               <p class="pricing-plan-title">Monthly</p>
               <h3 class="pricing-plan-cost ml-auto">$10</h3>
               <ul class="pricing-plan-features">
@@ -64,7 +64,7 @@
         <div class="col-md-4">
           <div class="card pricing-card pricing-card-highlighted pricing-plan-pro">
             <div class="card-body">
-              <i class="mdi mdi-trophy pricing-plan-icon"></i>
+              <i class="mdi pricing-plan-icon"></i>
               <p class="pricing-plan-title">Quarterly</p>
               <h3 class="pricing-plan-cost ml-auto">$25</h3>
               <ul class="pricing-plan-features">
@@ -79,7 +79,7 @@
         <div class="col-md-4">
           <div class="card pricing-card pricing-plan-enterprise">
             <div class="card-body">
-              <i class="mdi mdi-wallet-giftcard pricing-plan-icon"></i>
+              <i class="mdi pricing-plan-icon"></i>
               <p class="pricing-plan-title">Annual</p>
               <h3 class="pricing-plan-cost ml-auto">$90</h3>
               <ul class="pricing-plan-features">
