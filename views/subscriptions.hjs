@@ -151,16 +151,52 @@
     });
   });
 
-  document.querySelector("#payment-details-form").addEventListener("submit", function(event) {
-    event.preventDefault();
-    let creditCardNumber = document.getElementById("creditCardNumber").value;
-    if(creditCardNumber === '') {
-      alert('Please enter the Credit Card Number.');
-      return false;
+  document.querySelector("#payment-details-form").addEventListener("submit", async function(event) {
+  event.preventDefault();
+  let creditCardNumber = document.getElementById("creditCardNumber").value;
+  let holderName = document.getElementById("holderName").value;
+  let payedAmount = document.getElementById("payedAmount").value;
+  let subType = document.getElementById("subType").value;
+  let zoneId = document.getElementById("zoneId").value;
+
+  if(creditCardNumber === '') {
+    alert('Please enter the Credit Card Number.');
+    return false;
+  }
+
+  const requestBody = {
+    creditCardNumber,
+    holderName,
+    payedAmount,
+    subType,
+    zoneId
+  };
+  
+  try {
+    const response = await fetch('/api/v1/payment/subscription', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    const data = await response.json();
+
+    if (response.status !== 201) {
+      console.error('Error:', data);
+      alert(data);
+      return;
     }
+  
     $('#paymentForm').collapse('hide');
     alert('Payment Successful!');
-  });
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error processing payment');
+  }
+});
+
 
 
 document.getElementById('viewSubscriptions').addEventListener('click', function() {
