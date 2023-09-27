@@ -17,17 +17,17 @@ const getUser = async function (req) {
   console.log("hi", sessionToken);
   const user = await db
     .select("*")
-    .from("se_project_06lv.sessions")
+    .from("db_sxf5.sessions")
     .where("token", sessionToken)
     .innerJoin(
-      "se_project_06lv.users",
-      "se_project_06lv.sessions.userid",
-      "se_project_06lv.users.id"
+      "db_sxf5.users",
+      "db_sxf5.sessions.userid",
+      "db_sxf5.users.id"
     )
     .innerJoin(
-      "se_project_06lv.roles",
-      "se_project_06lv.users.roleid",
-      "se_project_06lv.roles.id"
+      "db_sxf5.roles",
+      "db_sxf5.users.roleid",
+      "db_sxf5.roles.id"
     )
     .first();
 
@@ -49,7 +49,7 @@ module.exports = function (app) {
       const {
         newpassword
       } = req.body;
-      await db("se_project_06lv.users")
+      await db("db_sxf5.users")
         .where("id", user.userid)
         .update({
           password: newpassword
@@ -63,7 +63,7 @@ module.exports = function (app) {
 
   app.get("/api/v1/zones", async function (req, res) {
     try {
-      const zones = await db.select('*').from("se_project_06lv.zones");
+      const zones = await db.select('*').from("db_sxf5.zones");
       return res.status(200).json(zones);
     } catch (e) {
       console.log(e.message);
@@ -79,7 +79,7 @@ module.exports = function (app) {
         return res.status(401).send("Unauthorized");
       }
 
-      const subscriptions = await db('se_project_06lv.subscription').where('userid', user.userid);
+      const subscriptions = await db('db_sxf5.subscription').where('userid', user.userid);
 
       if (subscriptions.length === 0) {
         return res.status(404).send("No subscriptions found for this user");
@@ -130,7 +130,7 @@ module.exports = function (app) {
           return res.status(400).send("Invalid subscription type");
       }
 
-      const subscriptionId = await db("se_project_06lv.subscription")
+      const subscriptionId = await db("db_sxf5.subscription")
         .insert({
           subtype: subType,
           zoneid: zoneId,
@@ -139,7 +139,7 @@ module.exports = function (app) {
         })
         .returning('id');
 
-      await db("se_project_06lv.transactions")
+      await db("db_sxf5.transactions")
         .insert({
           // id: paymentId,
           amount: payedAmount,
@@ -180,7 +180,7 @@ module.exports = function (app) {
 
       const paymentId = v4();
 
-      const ticketId = await db("se_project_06lv.tickets")
+      const ticketId = await db("db_sxf5.tickets")
         .insert({
           origin: origin,
           destination: destination,
@@ -189,7 +189,7 @@ module.exports = function (app) {
         })
         .returning('id');
 
-      await db("se_project_06lv.transactions")
+      await db("db_sxf5.transactions")
         .insert({
           amount: payedAmount,
           userid: user.userid,
@@ -226,7 +226,7 @@ module.exports = function (app) {
         return res.status(400).send("Missing required fields");
       }
 
-      const subscription = await db('se_project_06lv.subscription')
+      const subscription = await db('db_sxf5.subscription')
         .where({
           id: subId,
           userid: user.userid,
@@ -238,7 +238,7 @@ module.exports = function (app) {
         return res.status(400).send("Invalid subscription or no tickets left in the subscription.");
       }
 
-      await db('se_project_06lv.subscription')
+      await db('db_sxf5.subscription')
         .where({
           id: subId,
           userid: user.userid,
@@ -247,7 +247,7 @@ module.exports = function (app) {
           nooftickets: db.raw('nooftickets - 1')
         });
 
-      const ticketId = await db("se_project_06lv.tickets")
+      const ticketId = await db("db_sxf5.tickets")
         .insert({
           origin: origin,
           destination: destination,
@@ -258,7 +258,7 @@ module.exports = function (app) {
         .returning('id');
 
       // Insert into rides table
-      const rideId = await db("se_project_06lv.rides")
+      const rideId = await db("db_sxf5.rides")
         .insert({
           status: "upcoming",
           origin: origin,
@@ -292,7 +292,7 @@ module.exports = function (app) {
 
       const ticket = await db
         .select("*")
-        .from("se_project_06lv.tickets")
+        .from("db_sxf5.tickets")
         .where("id", ticketId)
         .first();
 
@@ -310,20 +310,20 @@ module.exports = function (app) {
         return res.status(400).send("Cannot refund past dated tickets");
       }
 
-      await db.from("se_project_06lv.rides").where("ticketid", ticketId).andWhere("tripdate", ">", now).del();
+      await db.from("db_sxf5.rides").where("ticketid", ticketId).andWhere("tripdate", ">", now).del();
 
-      const subscription = await db.select("*").from("se_project_06lv.subscription").where("id", ticket.subid).first();
+      const subscription = await db.select("*").from("db_sxf5.subscription").where("id", ticket.subid).first();
 
       let refundAmount;
 
       if (subscription) {
         refundAmount = 0;
       } else {
-        const transaction = await db.select("amount").from("se_project_06lv.transactions").where("", `Ticket ID: ${ticketId}`).first();
+        const transaction = await db.select("amount").from("db_sxf5.transactions").where("", `Ticket ID: ${ticketId}`).first();
         refundAmount = transaction ? transaction.amount : 0;
       }
 
-      await db("se_project_06lv.refund_requests")
+      await db("db_sxf5.refund_requests")
         .insert({
           status: 'pending',
           userid: user.userid,
@@ -350,7 +350,7 @@ module.exports = function (app) {
       } = req.body;
       const status = "completed";
 
-      const rideExists = await db("se_project_06lv.rides")
+      const rideExists = await db("db_sxf5.rides")
         .where({
           "origin": origin,
           "destination": destination,
@@ -363,7 +363,7 @@ module.exports = function (app) {
         return res.status(404).send("The ride does not exist or is not upcoming.");
       }
 
-      const rideUpdate = await db("se_project_06lv.rides")
+      const rideUpdate = await db("db_sxf5.rides")
         .where({
           "origin": origin,
           "destination": destination,
@@ -393,7 +393,7 @@ module.exports = function (app) {
           userid: user.userid,
           nationalid: nationalId
         })
-        .into("se_project_06lv.senior_requests")
+        .into("db_sxf5.senior_requests")
         .returning("*")
         .then((rows) => rows[0]);
 
@@ -428,7 +428,7 @@ module.exports = function (app) {
       }
 
       // Check if the request exists
-      const refundRequest = await db('se_project_06lv.refund_requests')
+      const refundRequest = await db('db_sxf5.refund_requests')
         .where({
           id: requestId,
         })
@@ -445,7 +445,7 @@ module.exports = function (app) {
       }
 
       // Update the request status
-      await db('se_project_06lv.refund_requests')
+      await db('db_sxf5.refund_requests')
         .where({
           id: requestId,
         })
@@ -490,7 +490,7 @@ module.exports = function (app) {
       }
 
 
-      const update = await db("se_project_06lv.zones")
+      const update = await db("db_sxf5.zones")
         .where({
           id: zoneId
         })
@@ -552,7 +552,7 @@ module.exports = function (app) {
       }
 
 
-      const station = await db("se_project_06lv.stations").insert({
+      const station = await db("db_sxf5.stations").insert({
         stationname: stationname,
         stationposition: "start",
         stationstatus: "new",
@@ -598,7 +598,7 @@ module.exports = function (app) {
           });
       }
 
-      const updatedStation = await db("se_project_06lv.stations")
+      const updatedStation = await db("db_sxf5.stations")
         .where({
           id: parsedStationId
         })
@@ -635,9 +635,9 @@ module.exports = function (app) {
       destinationId = parseInt(destinationId);
 
 
-      const stations = await db.select('*').from('se_project_06lv.stations');
-      const routes = await db.select('*').from('se_project_06lv.routes');
-      const stationRoutes = await db.select('*').from('se_project_06lv.stationroutes');
+      const stations = await db.select('*').from('db_sxf5.stations');
+      const routes = await db.select('*').from('db_sxf5.routes');
+      const stationRoutes = await db.select('*').from('db_sxf5.stationroutes');
 
       const graph = transformDataForBfs(stations, routes, stationRoutes);
 
@@ -739,7 +739,7 @@ module.exports = function (app) {
   
       const station = await db
         .select("*")
-        .from("se_project_06lv.stations")
+        .from("db_sxf5.stations")
         .where("id", parsedStationId)
         .first();
   
@@ -749,7 +749,7 @@ module.exports = function (app) {
   
       const routes = await db
         .select("*")
-        .from("se_project_06lv.routes")
+        .from("db_sxf5.routes")
         .where("fromstationid", parsedStationId)
         .orWhere("tostationid", parsedStationId);
         
@@ -760,7 +760,7 @@ module.exports = function (app) {
         if(route.fromstationid === parsedStationId || route.tostationid === parsedStationId) {
           const stationRoutes = await db
             .select("*")
-            .from("se_project_06lv.stationroutes")
+            .from("db_sxf5.stationroutes")
             .where("routeid", route.id)
             .orderBy('id');  
             
@@ -778,7 +778,7 @@ module.exports = function (app) {
           }
         }
   
-        await db("se_project_06lv.routes")
+        await db("db_sxf5.routes")
           .where("id", route.id)
           .update({
             fromstationid: newFromStationId,
@@ -786,7 +786,7 @@ module.exports = function (app) {
           });
       }
   
-      await db("se_project_06lv.stations").where("id", parsedStationId).delete();
+      await db("db_sxf5.stations").where("id", parsedStationId).delete();
   
       return res.status(200).send("Station deleted successfully");
     } catch (e) {
@@ -820,10 +820,10 @@ module.exports = function (app) {
           });
       }
 
-      const toStation = await db('se_project_06lv.stations').where({
+      const toStation = await db('db_sxf5.stations').where({
         id: connectedStationId
       }).first();
-      const fromStation = await db('se_project_06lv.stations').where({
+      const fromStation = await db('db_sxf5.stations').where({
         id: newStationId
       }).first();
 
@@ -836,14 +836,14 @@ module.exports = function (app) {
       }
 
       // Create the route in the database
-      const [routeId] = await db("se_project_06lv.routes").insert({
+      const [routeId] = await db("db_sxf5.routes").insert({
         fromstationid: newStationId,
         tostationid: connectedStationId,
         routename: routename,
       }).returning('id');
 
       // Associate the stations to the route
-      await db('se_project_06lv.stationroutes').insert([{
+      await db('db_sxf5.stationroutes').insert([{
           stationid: newStationId,
           routeid: routeId
         },
@@ -888,7 +888,7 @@ module.exports = function (app) {
           .send("Invalid request. Missing required fields.");
       }
 
-      const updatedRoute = await db("se_project_06lv.routes")
+      const updatedRoute = await db("db_sxf5.routes")
         .where({
           id: routeid
         })
@@ -915,7 +915,7 @@ module.exports = function (app) {
       const user = await getUser(req);
       if (user.isAdmin) {
         const routeId = req.params.routeId;
-        const routeDelete = await db('se_project_06lv.routes').where('id', routeId);
+        const routeDelete = await db('db_sxf5.routes').where('id', routeId);
         console.log(routeDelete)
         if (routeDelete.length == 0) {
           return res.status(404).json({
@@ -934,23 +934,23 @@ module.exports = function (app) {
 
         console.log(tostationid);
         console.log(fromstationid);
-        const nextStation = await db('se_project_06lv.routes').where('tostationid', fromstationid).first();
+        const nextStation = await db('db_sxf5.routes').where('tostationid', fromstationid).first();
         if (nextStation) {
-          await db('se_project_06lv.stations').where('id', nextStation.fromstationid).update({
+          await db('db_sxf5.stations').where('id', nextStation.fromstationid).update({
             stationposition: 'start'
           });
 
         }
         console.log(nextStation);
-        const prevStation = await db('se_project_06lv.routes').where('tostationid', tostationid).first();
+        const prevStation = await db('db_sxf5.routes').where('tostationid', tostationid).first();
         if (prevStation) {
-          await db('se_project_06lv.stations').where('id', prevStation.fromstationid).update({
+          await db('db_sxf5.stations').where('id', prevStation.fromstationid).update({
             stationposition: 'start'
           });
         }
         console.log(prevStation);
         console.log('Route and connected stations deleted successfully');
-        await db('se_project_06lv.routes').where('id', routeId).del();
+        await db('db_sxf5.routes').where('id', routeId).del();
         return res.status(200).json({
           message: 'Route and connected stations deleted successfully'
         });
@@ -973,7 +973,7 @@ module.exports = function (app) {
   app.get("/users", async function (req, res) {
     try {
       const user = await getUser(req);
-      const users = await db.select("*").from("se_project_06lv.users");
+      const users = await db.select("*").from("db_sxf5.users");
 
       return res.status(200).json(users);
     } catch (e) {
@@ -984,7 +984,7 @@ module.exports = function (app) {
 
   app.get("/manage/stationss", async function (req, res) {
     try {
-      const stations = await db.select("*").from("se_project_06lv.stations");
+      const stations = await db.select("*").from("db_sxf5.stations");
 
       return res.status(200).json(stations);
     } catch (e) {
@@ -995,7 +995,7 @@ module.exports = function (app) {
 
   app.get("/manage/routess", async function (req, res) {
     try {
-      const routes = await db.select("*").from("se_project_06lv.routes");
+      const routes = await db.select("*").from("db_sxf5.routes");
 
       return res.status(200).json(routes);
     } catch (e) {
@@ -1007,7 +1007,7 @@ module.exports = function (app) {
 
   app.get("/manage/requests/refunds", async function (req, res) {
     try {
-      const routes = await db.select("*").from("se_project_06lv.refund_requests");
+      const routes = await db.select("*").from("db_sxf5.refund_requests");
 
       return res.status(200).json(routes);
     } catch (e) {
@@ -1018,7 +1018,7 @@ module.exports = function (app) {
 
   app.get("/manage/requests/seniors", async function (req, res) {
     try {
-      const routes = await db.from("se_project_06lv.senior_requests").where("status", "pending");
+      const routes = await db.from("db_sxf5.senior_requests").where("status", "pending");
 
       return res.status(200).json(routes);
     } catch (e) {
@@ -1033,7 +1033,7 @@ module.exports = function (app) {
       const {
         newpassword
       } = req.body;
-      await db("se_project_06lv.users")
+      await db("db_sxf5.users")
         .where("id", user.userid)
         .update({
           password: newpassword
@@ -1047,7 +1047,7 @@ module.exports = function (app) {
 
   app.get("/api/v1/zones", async function (req, res) {
     try {
-      const zones = await db.select('*').from("se_project_06lv.zones");
+      const zones = await db.select('*').from("db_sxf5.zones");
       return res.status(200).json(zones);
     } catch (e) {
       console.log(e.message);
@@ -1062,7 +1062,7 @@ module.exports = function (app) {
 
   app.get("/manage/requests/refunds", async function (req, res) {
     try {
-      const routes = await db.select("*").from("se_project_06lv.refund_requests");
+      const routes = await db.select("*").from("db_sxf5.refund_requests");
 
       return res.status(200).json(routes);
     } catch (e) {
@@ -1073,7 +1073,7 @@ module.exports = function (app) {
 
   app.get("/manage/requests/seniors", async function (req, res) {
     try {
-      const routes = await db.select("*").from("se_project_06lv.senior_requests").where("status", "pending");
+      const routes = await db.select("*").from("db_sxf5.senior_requests").where("status", "pending");
 
       return res.status(200).json(routes);
     } catch (e) {
@@ -1109,7 +1109,7 @@ module.exports = function (app) {
       }
 
       
-     const x= await db("se_project_06lv.senior_requests")
+     const x= await db("db_sxf5.senior_requests")
         .where("id", requestId)
         .update({
           status: seniorStatus
@@ -1118,7 +1118,7 @@ module.exports = function (app) {
         
 
 
-    await db("se_project_06lv.users")
+    await db("db_sxf5.users")
         .where("id",x[0].userid)
          .update({
            roleid: 3
@@ -1165,7 +1165,7 @@ module.exports = function (app) {
         });
       }
 
-      await db("se_project_06lv.refund_requests")
+      await db("db_sxf5.refund_requests")
         .where("id", requestId)
         .update({
           status: refundStatus
@@ -1188,7 +1188,7 @@ module.exports = function (app) {
 
   // app.get("/tickets", async function (req, res) {
   //   try {
-  //     const tickets = await db.select("*").from("se_project_06lv.tickets");
+  //     const tickets = await db.select("*").from("db_sxf5.tickets");
 
   //     return res.status(200).json(tickets);
   //   } catch (e) {
@@ -1200,7 +1200,7 @@ module.exports = function (app) {
   app.get("/tickets", async function (req, res) {
     try {
       const user = await getUser(req);
-      const tickets = await db.select("*").from("se_project_06lv.tickets").where("userid", user.userid);
+      const tickets = await db.select("*").from("db_sxf5.tickets").where("userid", user.userid);
 
       return res.status(200).json(tickets);
     } catch (e) {
@@ -1212,7 +1212,7 @@ module.exports = function (app) {
   app.get("/ridess", async function (req, res) {
     try {
       const user = await getUser(req);
-      const rides = await db.select("*").from("se_project_06lv.rides").where("userid", user.userid);
+      const rides = await db.select("*").from("db_sxf5.rides").where("userid", user.userid);
 
       return res.status(200).json(rides);
     } catch (e) {

@@ -1,11 +1,11 @@
 -- Insert Roles
-INSERT INTO se_project.roles("role")
+INSERT INTO db_sxf5.roles("role")
 	VALUES ('user');
-INSERT INTO se_project.roles("role")
+INSERT INTO db_sxf5.roles("role")
 	VALUES ('admin');
-INSERT INTO se_project.roles("role")
+INSERT INTO db_sxf5.roles("role")
 	VALUES ('senior');	
 -- Set user role as Admin
-UPDATE se_project.users
+UPDATE db_sxf5.users
 	SET "roleid"=2
 	WHERE "email"='desoukya@gmail.com';
