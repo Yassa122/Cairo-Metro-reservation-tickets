@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cairo Metro Reservation</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        background-color: #f5f5f5;
+        font-family: "Roboto", sans-serif;
+      }
+      .navbar {
+        background-color: #343a40;
+      }
+      .navbar-brand,
+      .nav-link {
+        color: #fff;
+      }
+      .container {
+        margin-top: 20px;
+      }
+      .map-container {
+        position: relative;
+        width: 100%;
+        height: 500px;
+        margin-bottom: 20px;
+      }
+      .map-container img {
+        width: 100%;
+        height: 100%;
+      }
+      .btn {
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <a class="navbar-brand" href="#">Cairo Metro</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Contact</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1 class="text-center">Cairo Metro Reservation</h1>
+          <div class="map-container">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/e/eb/Cairo_Metro_Lines_Map.png"
+              alt="Cairo Metro Map"
+            />
+          </div>
+          <div class="form-group">
+            <label for="startingStation">Select Starting Station:</label>
+            <select class="form-control" id="startingStation">
+              <option value="" disabled selected>
+                Select your starting station
+              </option>
+              <!-- Add station options here -->
+              <option value="station1">Station 1</option>
+              <option value="station2">Station 2</option>
+              <option value="station3">Station 3</option>
+              <!-- Add more stations as needed -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="endingStation">Select Ending Station:</label>
+            <select class="form-control" id="endingStation">
+              <option value="" disabled selected>
+                Select your ending station
+              </option>
+              <!-- Add station options here -->
+              <option value="station1">Station 1</option>
+              <option value="station2">Station 2</option>
+              <option value="station3">Station 3</option>
+              <!-- Add more stations as needed -->
+            </select>
+          </div>
+          <button id="reserveButton" class="btn btn-primary btn-block">
+            Reserve Ticket
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $("#reserveButton").click(function () {
+          const startingStation = $("#startingStation").val();
+          const endingStation = $("#endingStation").val();
+
+          if (!startingStation || !endingStation) {
+            alert("Please select both starting and ending stations.");
+            return;
+          }
+
+          alert(`Ticket reserved from ${startingStation} to ${endingStation}.`);
+        });
+      });
+    </script>
+  </body>
+</html>
