@@ -7,7 +7,7 @@ The project uses the following technologies:
 
 - **Frontend:** JavaScript, Bootstrap
 - **Backend:** Node.js, Express.js
-- **Database:** MongoDB
+- **Database:** Postgresql
 - **Deployment:** Render
 
 ## Features
