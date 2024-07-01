@@ -54,9 +54,9 @@ To run the Cairo Metro Reservation System locally, follow these steps:
     - Stay updated with the latest metro schedules and changes.
 
 ## Screenshots
-- Interactive map showing metro lines and stations.
-- Easy-to-use interface for booking tickets.
-- Stay updated with real-time metro schedules.
+![Alt text](https://imgur.com/q3sr0ud.png)
+![Alt text](https://imgur.com/Ms02cml.png)
+![Alt text](https://imgur.com/hMUUvac.png)
 
 ## Deployment
 The project is deployed on Render. You can access it at [Cairo Metro Reservation Tickets Website](#).
